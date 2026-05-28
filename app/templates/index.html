@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevForge - The Developer's Arsenal</title>
+    <meta name="description" content="DevForge - A collection of essential developer tools: JSON formatter, Base64, JWT decoder, regex tester, and more.">
+    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#9876;</text></svg>">
+    <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js" defer></script>
+</head>
+<body>
+
+<div class="header">
+    <div class="header-crown">&#9876;</div>
+    <h1>DEVFORGE</h1>
+    <div class="subtitle">The Developer's Arsenal</div>
+    <div class="throne-wars-badge">Throne Wars Innovation</div>
+</div>
+
+<div class="app-container">
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-search">
+            <input type="text" id="sidebar-search-input" placeholder="Search tools..." oninput="filterSidebar()">
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">Formatters</div>
+            <button class="tool-btn" data-tool="json" onclick="switchTool('json')">
+                <span class="tool-icon">{ }</span> JSON Formatter
+            </button>
+            <button class="tool-btn" data-tool="html-entity" onclick="switchTool('html-entity')">
+                <span class="tool-icon">&lt;&gt;</span> HTML Entities
+            </button>
+            <button class="tool-btn" data-tool="sql" onclick="switchTool('sql')">
+                <span class="tool-icon">&#9638;</span> SQL Formatter
+            </button>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">Encoders / Decoders</div>
+            <button class="tool-btn" data-tool="base64" onclick="switchTool('base64')">
+                <span class="tool-icon">B64</span> Base64
+            </button>
+            <button class="tool-btn" data-tool="url" onclick="switchTool('url')">
+                <span class="tool-icon">%20</span> URL Encode
+            </button>
+            <button class="tool-btn" data-tool="jwt" onclick="switchTool('jwt')">
+                <span class="tool-icon">&#9919;</span> JWT Decoder
+            </button>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">Generators</div>
+            <button class="tool-btn" data-tool="uuid" onclick="switchTool('uuid')">
+                <span class="tool-icon">&#9860;</span> UUID Generator
+            </button>
+            <button class="tool-btn" data-tool="hash" onclick="switchTool('hash')">
+                <span class="tool-icon">#</span> Hash Generator
+            </button>
+            <button class="tool-btn" data-tool="password" onclick="switchTool('password')">
+                <span class="tool-icon">&#9919;</span> Password Gen
+            </button>
+            <button class="tool-btn" data-tool="lorem" onclick="switchTool('lorem')">
+                <span class="tool-icon">&#182;</span> Lorem Ipsum
+            </button>
+            <button class="tool-btn" data-tool="qr" onclick="switchTool('qr')">
+                <span class="tool-icon">&#9641;</span> QR Code
+            </button>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">Testers</div>
+            <button class="tool-btn" data-tool="regex" onclick="switchTool('regex')">
+                <span class="tool-icon">.*</span> Regex Tester
+            </button>
+            <button class="tool-btn" data-tool="diff" onclick="switchTool('diff')">
+                <span class="tool-icon">&#177;</span> Diff Checker
+            </button>
+            <button class="tool-btn" data-tool="cron" onclick="switchTool('cron')">
+                <span class="tool-icon">&#9201;</span> Cron Parser
+            </button>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">Converters</div>
+            <button class="tool-btn" data-tool="timestamp" onclick="switchTool('timestamp')">
+                <span class="tool-icon">&#9200;</span> Timestamp
+            </button>
+            <button class="tool-btn" data-tool="color" onclick="switchTool('color')">
+                <span class="tool-icon">&#9684;</span> Color Picker
+            </button>
+            <button class="tool-btn" data-tool="number" onclick="switchTool('number')">
+                <span class="tool-icon">01</span> Number Base
+            </button>
+            <button class="tool-btn" data-tool="units" onclick="switchTool('units')">
+                <span class="tool-icon">&#8644;</span> CSS Units
+            </button>
+            <button class="tool-btn" data-tool="yaml" onclick="switchTool('yaml')">
+                <span class="tool-icon">&#8621;</span> YAML / JSON
+            </button>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">Text Tools</div>
+            <button class="tool-btn" data-tool="case" onclick="switchTool('case')">
+                <span class="tool-icon">Aa</span> Case Converter
+            </button>
+            <button class="tool-btn" data-tool="wordcount" onclick="switchTool('wordcount')">
+                <span class="tool-icon">&#9998;</span> Word Counter
+            </button>
+            <button class="tool-btn" data-tool="markdown" onclick="switchTool('markdown')">
+                <span class="tool-icon">M&#8595;</span> Markdown Preview
+            </button>
+        </div>
+    </nav>
+
+    <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+    <main class="main-content" id="main-content">
+        <!-- Welcome Screen -->
+        <div class="tool-panel active" id="panel-welcome">
+            <div class="welcome">
+                <div class="forge-icon">&#9876;</div>
+                <h2>Welcome to DevForge</h2>
+                <p>Your medieval-forged toolkit for everyday development tasks. Pick a weapon from the arsenal to begin.</p>
+                <div class="tools-grid">
+                    <div class="tool-card" onclick="switchTool('json')">
+                        <div class="card-icon">{ }</div>
+                        <div class="card-name">JSON</div>
+                    </div>
+                    <div class="tool-card" onclick="switchTool('base64')">
+                        <div class="card-icon">B64</div>
+                        <div class="card-name">Base64</div>
+                    </div>
+                    <div class="tool-card" onclick="switchTool('jwt')">
+                        <div class="card-icon">&#9919;</div>
+                        <div class="card-name">JWT</div>
+                    </div>
+                    <div class="tool-card" onclick="switchTool('regex')">
+                        <div class="card-icon">.*</div>
+                        <div class="card-name">Regex</div>
+                    </div>
+                    <div class="tool-card" onclick="switchTool('timestamp')">
+                        <div class="card-icon">&#9200;</div>
+                        <div class="card-name">Timestamp</div>
+                    </div>
+                    <div class="tool-card" onclick="switchTool('color')">
+                        <div class="card-icon">&#9684;</div>
+                        <div class="card-name">Colors</div>
+                    </div>
+                    <div class="tool-card" onclick="switchTool('hash')">
+                        <div class="card-icon">#</div>
+                        <div class="card-name">Hash</div>
+                    </div>
+                    <div class="tool-card" onclick="switchTool('diff')">
+                        <div class="card-icon">&#177;</div>
+                        <div class="card-name">Diff</div>
+                    </div>
+                    <div class="tool-card" onclick="switchTool('uuid')">
+                        <div class="card-icon">&#9860;</div>
+                        <div class="card-name">UUID</div>
+                    </div>
+                    <div class="tool-card" onclick="switchTool('password')">
+                        <div class="card-icon">&#9919;</div>
+                        <div class="card-name">Password</div>
+                    </div>
+                    <div class="tool-card" onclick="switchTool('yaml')">
+                        <div class="card-icon">&#8621;</div>
+                        <div class="card-name">YAML</div>
+                    </div>
+                    <div class="tool-card" onclick="switchTool('cron')">
+                        <div class="card-icon">&#9201;</div>
+                        <div class="card-name">Cron</div>
+                    </div>
+                    <div class="tool-card" onclick="switchTool('qr')">
+                        <div class="card-icon">&#9641;</div>
+                        <div class="card-name">QR Code</div>
+                    </div>
+                    <div class="tool-card" onclick="switchTool('case')">
+                        <div class="card-icon">Aa</div>
+                        <div class="card-name">Case</div>
+                    </div>
+                    <div class="tool-card" onclick="switchTool('markdown')">
+                        <div class="card-icon">M&#8595;</div>
+                        <div class="card-name">Markdown</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- JSON Formatter -->
+        <div class="tool-panel" id="panel-json">
+            <div class="tool-header">
+                <h2>JSON Formatter & Validator</h2>
+                <p>Format, validate, and minify JSON data</p>
+            </div>
+            <div class="input-group">
+                <label>Input JSON</label>
+                <textarea id="json-input" placeholder='{"name": "Throne Wars", "houses": ["Fire","Storm","Steel","Ice"]}'></textarea>
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-primary" onclick="jsonFormat()">Format</button>
+                <button class="btn" onclick="jsonMinify()">Minify</button>
+                <button class="btn" onclick="jsonValidate()">Validate</button>
+                <button class="btn" onclick="jsonTreeView()">Tree View</button>
+                <button class="btn btn-danger" onclick="clearFields('json-input','json-output')">Clear</button>
+            </div>
+            <div class="input-group">
+                <label>Output <span id="json-status"></span></label>
+                <div class="output-area" id="json-output" style="position:relative">
+                    <button class="copy-btn" onclick="copyOutput('json-output')">Copy</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Base64 -->
+        <div class="tool-panel" id="panel-base64">
+            <div class="tool-header">
+                <h2>Base64 Encoder / Decoder</h2>
+                <p>Encode or decode Base64 strings</p>
+            </div>
+            <div class="split-layout">
+                <div>
+                    <div class="input-group">
+                        <label>Text</label>
+                        <textarea id="b64-text" placeholder="Enter text to encode..."></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="b64Encode()">Encode &#8594;</button>
+                </div>
+                <div>
+                    <div class="input-group">
+                        <label>Base64</label>
+                        <textarea id="b64-encoded" placeholder="Enter Base64 to decode..."></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="b64Decode()">&#8592; Decode</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- URL Encode -->
+        <div class="tool-panel" id="panel-url">
+            <div class="tool-header">
+                <h2>URL Encoder / Decoder</h2>
+                <p>Encode or decode URL components</p>
+            </div>
+            <div class="split-layout">
+                <div>
+                    <div class="input-group">
+                        <label>Decoded Text</label>
+                        <textarea id="url-decoded" placeholder="Hello World & more!"></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="urlEncode()">Encode &#8594;</button>
+                </div>
+                <div>
+                    <div class="input-group">
+                        <label>Encoded URL</label>
+                        <textarea id="url-encoded" placeholder="Hello%20World%20%26%20more!"></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="urlDecode()">&#8592; Decode</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- JWT Decoder -->
+        <div class="tool-panel" id="panel-jwt">
+            <div class="tool-header">
+                <h2>JWT Decoder</h2>
+                <p>Decode and inspect JSON Web Tokens</p>
+            </div>
+            <div class="input-group">
+                <label>JWT Token</label>
+                <textarea id="jwt-input" class="small" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IlRocm9uZSBXYXJzIn0..."></textarea>
+            </div>
+            <button class="btn btn-primary" onclick="jwtDecode()" style="margin-bottom:1rem">Decode</button>
+            <div class="split-layout">
+                <div class="input-group">
+                    <label>Header</label>
+                    <div class="output-area" id="jwt-header" style="min-height:100px;position:relative">
+                        <button class="copy-btn" onclick="copyOutput('jwt-header')">Copy</button>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Payload</label>
+                    <div class="output-area" id="jwt-payload" style="min-height:100px;position:relative">
+                        <button class="copy-btn" onclick="copyOutput('jwt-payload')">Copy</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- UUID Generator -->
+        <div class="tool-panel" id="panel-uuid">
+            <div class="tool-header">
+                <h2>UUID Generator</h2>
+                <p>Generate random v4 UUIDs</p>
+            </div>
+            <div class="btn-row" style="align-items:center">
+                <label style="margin:0;color:var(--text-dim);font-size:0.85rem">Count:</label>
+                <input type="number" id="uuid-count" value="5" min="1" max="50" style="width:80px">
+                <button class="btn btn-primary" onclick="generateUUIDs()">Generate</button>
+                <button class="btn" onclick="copyAllUUIDs()">Copy All</button>
+            </div>
+            <div class="uuid-list" id="uuid-output"></div>
+        </div>
+
+        <!-- Hash Generator -->
+        <div class="tool-panel" id="panel-hash">
+            <div class="tool-header">
+                <h2>Hash Generator</h2>
+                <p>Generate SHA-1, SHA-256, SHA-384, SHA-512 hashes</p>
+            </div>
+            <div class="input-group">
+                <label>Input Text</label>
+                <textarea id="hash-input" class="small" placeholder="Enter text to hash..."></textarea>
+            </div>
+            <button class="btn btn-primary" onclick="generateHashes()" style="margin-bottom:1rem">Generate Hashes</button>
+            <div class="color-values" id="hash-output"></div>
+        </div>
+
+        <!-- Password Generator -->
+        <div class="tool-panel" id="panel-password">
+            <div class="tool-header">
+                <h2>Password Generator</h2>
+                <p>Generate strong, secure passwords</p>
+            </div>
+            <div class="btn-row" style="align-items:center;flex-wrap:wrap;gap:1rem">
+                <div>
+                    <label style="font-size:0.75rem;color:var(--text-dim)">Length</label>
+                    <input type="number" id="pw-length" value="16" min="4" max="128" style="width:80px">
+                </div>
+                <label style="color:var(--text-dim);font-size:0.85rem;display:flex;align-items:center;gap:0.3rem">
+                    <input type="checkbox" id="pw-upper" checked> Uppercase
+                </label>
+                <label style="color:var(--text-dim);font-size:0.85rem;display:flex;align-items:center;gap:0.3rem">
+                    <input type="checkbox" id="pw-lower" checked> Lowercase
+                </label>
+                <label style="color:var(--text-dim);font-size:0.85rem;display:flex;align-items:center;gap:0.3rem">
+                    <input type="checkbox" id="pw-digits" checked> Digits
+                </label>
+                <label style="color:var(--text-dim);font-size:0.85rem;display:flex;align-items:center;gap:0.3rem">
+                    <input type="checkbox" id="pw-symbols" checked> Symbols
+                </label>
+            </div>
+            <button class="btn btn-primary" onclick="generatePassword()" style="margin:1rem 0">Generate</button>
+            <div class="output-area" id="pw-output" style="font-size:1.2rem;min-height:60px;display:flex;align-items:center;position:relative">
+                <button class="copy-btn" onclick="copyOutput('pw-output')">Copy</button>
+            </div>
+            <div class="strength-meter" id="pw-meter"><div class="fill" id="pw-meter-fill"></div></div>
+            <div id="pw-strength-label" style="font-size:0.8rem;margin-top:0.3rem;color:var(--text-dim)"></div>
+        </div>
+
+        <!-- Lorem Ipsum -->
+        <div class="tool-panel" id="panel-lorem">
+            <div class="tool-header">
+                <h2>Lorem Ipsum Generator</h2>
+                <p>Generate placeholder text</p>
+            </div>
+            <div class="btn-row" style="align-items:center">
+                <label style="margin:0;color:var(--text-dim);font-size:0.85rem">Paragraphs:</label>
+                <input type="number" id="lorem-count" value="3" min="1" max="20" style="width:80px">
+                <button class="btn btn-primary" onclick="generateLorem()">Generate</button>
+                <button class="btn" onclick="copyOutput('lorem-output')">Copy</button>
+            </div>
+            <div class="output-area generated-text" id="lorem-output" style="position:relative;min-height:200px">
+                <button class="copy-btn" onclick="copyOutput('lorem-output')">Copy</button>
+            </div>
+        </div>
+
+        <!-- QR Code Generator -->
+        <div class="tool-panel" id="panel-qr">
+            <div class="tool-header">
+                <h2>QR Code Generator</h2>
+                <p>Generate QR codes from text or URLs</p>
+            </div>
+            <div class="input-group">
+                <label>Content</label>
+                <textarea id="qr-input" class="small" placeholder="Enter text or URL..."></textarea>
+            </div>
+            <div class="btn-row" style="align-items:center">
+                <label style="margin:0;color:var(--text-dim);font-size:0.85rem">Size:</label>
+                <select id="qr-size" style="width:100px">
+                    <option value="4">Small</option>
+                    <option value="6" selected>Medium</option>
+                    <option value="8">Large</option>
+                    <option value="12">XL</option>
+                </select>
+                <label style="margin:0;color:var(--text-dim);font-size:0.85rem">Error Correction:</label>
+                <select id="qr-ec" style="width:80px">
+                    <option value="L">Low</option>
+                    <option value="M" selected>Medium</option>
+                    <option value="Q">Quartile</option>
+                    <option value="H">High</option>
+                </select>
+                <button class="btn btn-primary" onclick="generateQR()">Generate</button>
+            </div>
+            <div class="qr-output-container" id="qr-output"></div>
+        </div>
+
+        <!-- Regex Tester -->
+        <div class="tool-panel" id="panel-regex">
+            <div class="tool-header">
+                <h2>Regex Tester</h2>
+                <p>Test regular expressions with live matching</p>
+            </div>
+            <div class="split-layout" style="grid-template-columns: 1fr auto">
+                <div class="input-group">
+                    <label>Pattern</label>
+                    <input type="text" id="regex-pattern" placeholder="e.g. (\w+)@(\w+)\.(\w+)" oninput="regexTest()">
+                </div>
+                <div class="input-group">
+                    <label>Flags</label>
+                    <input type="text" id="regex-flags" value="g" style="width:60px" oninput="regexTest()">
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Test String</label>
+                <textarea id="regex-input" placeholder="Enter text to test against..." oninput="regexTest()"></textarea>
+            </div>
+            <div class="input-group">
+                <label>Matches</label>
+                <div class="output-area" id="regex-output" style="position:relative;min-height:100px"></div>
+            </div>
+            <div class="match-info" id="regex-info"></div>
+        </div>
+
+        <!-- Diff Checker -->
+        <div class="tool-panel" id="panel-diff">
+            <div class="tool-header">
+                <h2>Diff Checker</h2>
+                <p>Compare two texts and see the differences</p>
+            </div>
+            <div class="split-layout">
+                <div class="input-group">
+                    <label>Original</label>
+                    <textarea id="diff-left" placeholder="Original text..."></textarea>
+                </div>
+                <div class="input-group">
+                    <label>Modified</label>
+                    <textarea id="diff-right" placeholder="Modified text..."></textarea>
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="computeDiff()" style="margin-bottom:1rem">Compare</button>
+            <div class="input-group">
+                <label>Differences</label>
+                <div class="output-area" id="diff-output" style="position:relative;padding:0"></div>
+            </div>
+        </div>
+
+        <!-- Cron Parser -->
+        <div class="tool-panel" id="panel-cron">
+            <div class="tool-header">
+                <h2>Cron Expression Parser</h2>
+                <p>Parse cron expressions into human-readable descriptions</p>
+            </div>
+            <div class="input-group">
+                <label>Cron Expression</label>
+                <input type="text" id="cron-input" placeholder="*/5 * * * *" oninput="parseCron()">
+            </div>
+            <div class="cron-help">
+                <code>minute(0-59) hour(0-23) day(1-31) month(1-12) weekday(0-6)</code>
+            </div>
+            <div class="output-area" id="cron-output" style="min-height:80px"></div>
+            <div class="input-group" style="margin-top:1rem">
+                <label>Quick Presets</label>
+                <div class="btn-row">
+                    <button class="btn" onclick="setCron('* * * * *')">Every minute</button>
+                    <button class="btn" onclick="setCron('*/5 * * * *')">Every 5 min</button>
+                    <button class="btn" onclick="setCron('0 * * * *')">Every hour</button>
+                    <button class="btn" onclick="setCron('0 0 * * *')">Daily midnight</button>
+                    <button class="btn" onclick="setCron('0 9 * * 1-5')">Weekdays 9am</button>
+                    <button class="btn" onclick="setCron('0 0 * * 0')">Weekly Sunday</button>
+                    <button class="btn" onclick="setCron('0 0 1 * *')">Monthly 1st</button>
+                    <button class="btn" onclick="setCron('0 0 1 1 *')">Yearly Jan 1</button>
+                </div>
+            </div>
+            <div class="input-group" style="margin-top:1rem">
+                <label>Next 5 Run Times</label>
+                <div class="color-values" id="cron-next-runs"></div>
+            </div>
+        </div>
+
+        <!-- Timestamp Converter -->
+        <div class="tool-panel" id="panel-timestamp">
+            <div class="tool-header">
+                <h2>Timestamp Converter</h2>
+                <p>Convert between Unix timestamps and human-readable dates</p>
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-primary" onclick="tsNow()">Current Time</button>
+            </div>
+            <div class="split-layout">
+                <div class="input-group">
+                    <label>Unix Timestamp (seconds)</label>
+                    <input type="text" id="ts-unix" placeholder="1700000000" oninput="tsFromUnix()">
+                </div>
+                <div class="input-group">
+                    <label>Date & Time (Local)</label>
+                    <input type="text" id="ts-human" placeholder="2024-01-15 12:30:00" oninput="tsFromHuman()">
+                </div>
+            </div>
+            <div class="color-values" id="ts-details" style="margin-top:1rem"></div>
+        </div>
+
+        <!-- Color Picker -->
+        <div class="tool-panel" id="panel-color">
+            <div class="tool-header">
+                <h2>Color Picker & Converter</h2>
+                <p>Pick colors and convert between formats</p>
+            </div>
+            <div style="display:flex;gap:1rem;align-items:start;margin-bottom:1rem">
+                <input type="color" id="color-picker" value="#d4a54a" onchange="colorFromPicker()" style="width:60px;height:60px;border:none;cursor:pointer;background:none">
+                <div style="flex:1">
+                    <div class="input-group" style="margin-bottom:0.5rem">
+                        <input type="text" id="color-hex-input" placeholder="#d4a54a" value="#d4a54a" oninput="colorFromHex()">
+                    </div>
+                </div>
+            </div>
+            <div class="color-preview" id="color-preview" style="background:#d4a54a"></div>
+            <div class="color-values" id="color-values"></div>
+        </div>
+
+        <!-- Number Base Converter -->
+        <div class="tool-panel" id="panel-number">
+            <div class="tool-header">
+                <h2>Number Base Converter</h2>
+                <p>Convert numbers between decimal, hex, octal, and binary</p>
+            </div>
+            <div class="color-values">
+                <div class="input-group">
+                    <label>Decimal</label>
+                    <input type="text" id="num-dec" placeholder="255" oninput="numConvert('dec')">
+                </div>
+                <div class="input-group">
+                    <label>Hexadecimal</label>
+                    <input type="text" id="num-hex" placeholder="FF" oninput="numConvert('hex')">
+                </div>
+                <div class="input-group">
+                    <label>Octal</label>
+                    <input type="text" id="num-oct" placeholder="377" oninput="numConvert('oct')">
+                </div>
+                <div class="input-group">
+                    <label>Binary</label>
+                    <input type="text" id="num-bin" placeholder="11111111" oninput="numConvert('bin')">
+                </div>
+            </div>
+        </div>
+
+        <!-- CSS Units Converter -->
+        <div class="tool-panel" id="panel-units">
+            <div class="tool-header">
+                <h2>CSS Units Converter</h2>
+                <p>Convert between px, rem, em, and more</p>
+            </div>
+            <div class="input-group">
+                <label>Base Font Size (px)</label>
+                <input type="number" id="units-base" value="16" style="width:100px" oninput="unitsConvert()">
+            </div>
+            <div class="color-values">
+                <div class="input-group">
+                    <label>Pixels (px)</label>
+                    <input type="number" id="unit-px" placeholder="16" oninput="unitsConvertFrom('px')">
+                </div>
+                <div class="input-group">
+                    <label>REM</label>
+                    <input type="number" id="unit-rem" placeholder="1" step="0.0625" oninput="unitsConvertFrom('rem')">
+                </div>
+                <div class="input-group">
+                    <label>EM</label>
+                    <input type="number" id="unit-em" placeholder="1" step="0.0625" oninput="unitsConvertFrom('em')">
+                </div>
+                <div class="input-group">
+                    <label>Points (pt)</label>
+                    <input type="number" id="unit-pt" placeholder="12" step="0.5" oninput="unitsConvertFrom('pt')">
+                </div>
+            </div>
+        </div>
+
+        <!-- YAML / JSON Converter -->
+        <div class="tool-panel" id="panel-yaml">
+            <div class="tool-header">
+                <h2>YAML / JSON Converter</h2>
+                <p>Convert between YAML and JSON formats</p>
+            </div>
+            <div class="split-layout">
+                <div>
+                    <div class="input-group">
+                        <label>YAML</label>
+                        <textarea id="yaml-input" placeholder="name: DevForge&#10;version: 1.0&#10;features:&#10;  - json&#10;  - base64"></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="yamlToJson()">YAML &#8594; JSON</button>
+                </div>
+                <div>
+                    <div class="input-group">
+                        <label>JSON</label>
+                        <textarea id="yaml-json-input" placeholder='{"name": "DevForge", "version": 1.0}'></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="jsonToYaml()">JSON &#8594; YAML</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Case Converter -->
+        <div class="tool-panel" id="panel-case">
+            <div class="tool-header">
+                <h2>Case Converter</h2>
+                <p>Convert text between different cases</p>
+            </div>
+            <div class="input-group">
+                <label>Input Text</label>
+                <textarea id="case-input" class="small" placeholder="Enter your text here..."></textarea>
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-primary" onclick="convertCase('upper')">UPPER</button>
+                <button class="btn" onclick="convertCase('lower')">lower</button>
+                <button class="btn" onclick="convertCase('title')">Title Case</button>
+                <button class="btn" onclick="convertCase('sentence')">Sentence case</button>
+                <button class="btn" onclick="convertCase('camel')">camelCase</button>
+                <button class="btn" onclick="convertCase('snake')">snake_case</button>
+                <button class="btn" onclick="convertCase('kebab')">kebab-case</button>
+                <button class="btn" onclick="convertCase('pascal')">PascalCase</button>
+                <button class="btn" onclick="convertCase('constant')">CONSTANT_CASE</button>
+            </div>
+            <div class="output-area" id="case-output" style="position:relative;min-height:80px">
+                <button class="copy-btn" onclick="copyOutput('case-output')">Copy</button>
+            </div>
+        </div>
+
+        <!-- Word Counter -->
+        <div class="tool-panel" id="panel-wordcount">
+            <div class="tool-header">
+                <h2>Word Counter</h2>
+                <p>Count words, characters, sentences, and more</p>
+            </div>
+            <div class="input-group">
+                <label>Text</label>
+                <textarea id="wc-input" placeholder="Paste your text here..." oninput="wordCount()"></textarea>
+            </div>
+            <div class="stat-display" id="wc-stats">
+                <div class="stat-item"><div class="stat-value" id="wc-words">0</div><div class="stat-label">Words</div></div>
+                <div class="stat-item"><div class="stat-value" id="wc-chars">0</div><div class="stat-label">Characters</div></div>
+                <div class="stat-item"><div class="stat-value" id="wc-chars-ns">0</div><div class="stat-label">No Spaces</div></div>
+                <div class="stat-item"><div class="stat-value" id="wc-sentences">0</div><div class="stat-label">Sentences</div></div>
+                <div class="stat-item"><div class="stat-value" id="wc-lines">0</div><div class="stat-label">Lines</div></div>
+                <div class="stat-item"><div class="stat-value" id="wc-paragraphs">0</div><div class="stat-label">Paragraphs</div></div>
+            </div>
+        </div>
+
+        <!-- HTML Entity -->
+        <div class="tool-panel" id="panel-html-entity">
+            <div class="tool-header">
+                <h2>HTML Entity Encoder / Decoder</h2>
+                <p>Convert special characters to HTML entities and back</p>
+            </div>
+            <div class="split-layout">
+                <div>
+                    <div class="input-group">
+                        <label>Text</label>
+                        <textarea id="html-text" placeholder='<div class="test">&amp;</div>'></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="htmlEncode()">Encode &#8594;</button>
+                </div>
+                <div>
+                    <div class="input-group">
+                        <label>HTML Entities</label>
+                        <textarea id="html-encoded" placeholder="&amp;lt;div class=&amp;quot;test&amp;quot;&amp;gt;"></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="htmlDecode()">&#8592; Decode</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SQL Formatter -->
+        <div class="tool-panel" id="panel-sql">
+            <div class="tool-header">
+                <h2>SQL Formatter</h2>
+                <p>Format and beautify SQL queries</p>
+            </div>
+            <div class="input-group">
+                <label>Input SQL</label>
+                <textarea id="sql-input" placeholder="SELECT u.id, u.name, o.total FROM users u JOIN orders o ON u.id = o.user_id WHERE o.total > 100 ORDER BY o.total DESC LIMIT 10"></textarea>
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-primary" onclick="sqlFormat()">Format</button>
+                <button class="btn" onclick="sqlMinify()">Minify</button>
+                <button class="btn" onclick="sqlUppercase()">Uppercase Keywords</button>
+                <button class="btn btn-danger" onclick="clearFields('sql-input','sql-output')">Clear</button>
+            </div>
+            <div class="input-group">
+                <label>Output</label>
+                <div class="output-area" id="sql-output" style="position:relative">
+                    <button class="copy-btn" onclick="copyOutput('sql-output')">Copy</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Markdown Preview -->
+        <div class="tool-panel" id="panel-markdown">
+            <div class="tool-header">
+                <h2>Markdown Preview</h2>
+                <p>Write markdown and see a live preview</p>
+            </div>
+            <div class="split-layout">
+                <div class="input-group">
+                    <label>Markdown</label>
+                    <textarea id="md-input" style="min-height:300px" oninput="mdPreview()" placeholder="# Hello World&#10;&#10;Write some **markdown** here...&#10;&#10;- Item 1&#10;- Item 2&#10;&#10;`code` and more"></textarea>
+                </div>
+                <div class="input-group">
+                    <label>Preview</label>
+                    <div class="output-area" id="md-output" style="min-height:300px;line-height:1.6"></div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<button class="mobile-menu-btn" onclick="toggleSidebar()">&#9776;</button>
+
+<!-- Keyboard Shortcuts Modal -->
+<div class="modal-overlay" id="shortcuts-modal" onclick="closeShortcutsModal(event)">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Keyboard Shortcuts</h3>
+            <button class="modal-close" onclick="document.getElementById('shortcuts-modal').classList.remove('open')">&times;</button>
+        </div>
+        <div class="shortcuts-list">
+            <div class="shortcut-item"><kbd>Ctrl</kbd> + <kbd>1</kbd><span>JSON Formatter</span></div>
+            <div class="shortcut-item"><kbd>Ctrl</kbd> + <kbd>2</kbd><span>Base64</span></div>
+            <div class="shortcut-item"><kbd>Ctrl</kbd> + <kbd>3</kbd><span>JWT Decoder</span></div>
+            <div class="shortcut-item"><kbd>Ctrl</kbd> + <kbd>4</kbd><span>Regex Tester</span></div>
+            <div class="shortcut-item"><kbd>Ctrl</kbd> + <kbd>5</kbd><span>Timestamp</span></div>
+            <div class="shortcut-item"><kbd>Ctrl</kbd> + <kbd>6</kbd><span>Color Picker</span></div>
+            <div class="shortcut-item"><kbd>Ctrl</kbd> + <kbd>K</kbd><span>Search Tools</span></div>
+            <div class="shortcut-item"><kbd>?</kbd><span>Show Shortcuts</span></div>
+            <div class="shortcut-item"><kbd>Esc</kbd><span>Close Modal / Sidebar</span></div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', path='js/app.js') }}"></script>
+</body>
+</html>
