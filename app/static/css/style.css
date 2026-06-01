@@ -337,6 +337,40 @@ select {
     color: white;
 }
 
+.btn-row .btn {
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    font-weight: 500;
+}
+
+.btn-row .btn:hover {
+    border-color: var(--border-light);
+    background: var(--bg-hover);
+    color: var(--text);
+}
+
+.btn-row .btn.btn-active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+}
+
+.btn-row .btn-danger {
+    border-color: rgba(239,68,68,0.3);
+    color: var(--red);
+}
+
+.btn-row .btn-danger:hover {
+    background: var(--red-dim);
+}
+
+.btn-row .btn-danger.btn-active {
+    background: var(--red);
+    color: white;
+    border-color: var(--red);
+}
+
 .btn-danger { border-color: rgba(239,68,68,0.3); color: var(--red); }
 .btn-danger:hover { background: var(--red-dim); }
 
@@ -790,6 +824,26 @@ kbd {
 .shortcut-item span {
     margin-left: auto;
     color: var(--text-secondary);
+}
+
+/* ===== Code Generator ===== */
+.codegen-section {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+}
+
+.codegen-section > label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 0.75rem;
+    letter-spacing: 0.02em;
+}
+
+.codegen-section .output-area {
+    margin-top: 0.75rem;
 }
 
 /* ===== Mobile ===== */

@@ -9,6 +9,31 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#9881;</text></svg>">
     <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js" defer></script>
+    <style>
+        .mock-field-row{display:flex;gap:.5rem;align-items:center;margin-bottom:.5rem}
+        .mock-field-row input,.mock-field-row select{flex:1}
+        .mock-field-row .btn{flex-shrink:0}
+        .gha-job-card{background:var(--bg-input);border:1px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:.75rem}
+        .gha-job-card .input-group{margin-bottom:.5rem}
+        .gha-step-row{display:flex;gap:.5rem;align-items:center;margin-bottom:.4rem}
+        .gha-step-row input{flex:1}
+        .db-table-card{background:var(--bg-input);border:1px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:.75rem}
+        .db-table-card .input-group{margin-bottom:.5rem}
+        .db-col-row{display:flex;gap:.4rem;align-items:center;margin-bottom:.4rem;flex-wrap:wrap}
+        .db-col-row input,.db-col-row select{flex:1;min-width:80px}
+        .waterfall-bar{height:28px;border-radius:4px;position:relative;margin-bottom:6px;display:flex;align-items:center;transition:width .3s}
+        .waterfall-label{font-size:.75rem;color:var(--text-secondary);width:160px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .waterfall-row{display:flex;align-items:center;gap:.5rem;margin-bottom:2px}
+        .waterfall-bar-fill{height:100%;border-radius:4px;min-width:2px;display:flex;align-items:center;padding:0 8px;font-size:.7rem;color:#fff;white-space:nowrap}
+        .jdiff-added{background:rgba(34,197,94,.12);border-left:3px solid #22c55e;padding:2px 8px;margin:1px 0}
+        .jdiff-removed{background:rgba(239,68,68,.12);border-left:3px solid #ef4444;padding:2px 8px;margin:1px 0}
+        .jdiff-changed{background:rgba(234,179,8,.12);border-left:3px solid #eab308;padding:2px 8px;margin:1px 0}
+        .jdiff-unchanged{padding:2px 8px;margin:1px 0;color:var(--text-muted)}
+        .percentile-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.75rem;padding:.5rem}
+        .percentile-card{background:var(--bg-input);border:1px solid var(--border);border-radius:8px;padding:.75rem}
+        .percentile-card h4{font-size:.8rem;color:var(--text-muted);margin-bottom:.5rem}
+        .percentile-val{font-size:1.5rem;font-weight:700}
+    </style>
 </head>
 <body>
 
@@ -75,6 +100,9 @@
             <button class="tool-btn" data-tool="qr" onclick="switchTool('qr')">
                 <span class="tool-icon">&#9641;</span> QR Code
             </button>
+            <button class="tool-btn" data-tool="mockdata" onclick="switchTool('mockdata')">
+                <span class="tool-icon">&#9783;</span> Mock Data
+            </button>
         </div>
 
         <div class="sidebar-section">
@@ -87,6 +115,19 @@
             </button>
             <button class="tool-btn" data-tool="cron" onclick="switchTool('cron')">
                 <span class="tool-icon">&#9201;</span> Cron Parser
+            </button>
+            <button class="tool-btn" data-tool="ratelimit" onclick="switchTool('ratelimit')">
+                <span class="tool-icon">&#9202;</span> Rate Limiter
+            </button>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">DevOps</div>
+            <button class="tool-btn" data-tool="commit" onclick="switchTool('commit')">
+                <span class="tool-icon">&#10003;</span> Commit Message
+            </button>
+            <button class="tool-btn" data-tool="ghactions" onclick="switchTool('ghactions')">
+                <span class="tool-icon">&#9881;</span> GH Actions
             </button>
         </div>
 
@@ -106,6 +147,19 @@
             </button>
             <button class="tool-btn" data-tool="yaml" onclick="switchTool('yaml')">
                 <span class="tool-icon">&#8621;</span> YAML / JSON
+            </button>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">Visual</div>
+            <button class="tool-btn" data-tool="dbschema" onclick="switchTool('dbschema')">
+                <span class="tool-icon">&#9707;</span> DB Schema
+            </button>
+            <button class="tool-btn" data-tool="apitiming" onclick="switchTool('apitiming')">
+                <span class="tool-icon">&#9636;</span> API Timing
+            </button>
+            <button class="tool-btn" data-tool="jsondiff" onclick="switchTool('jsondiff')">
+                <span class="tool-icon">&#8800;</span> JSON Diff
             </button>
         </div>
 
@@ -192,6 +246,34 @@
                     <div class="tool-card" onclick="switchTool('qr')">
                         <div class="card-icon">&#9641;</div>
                         <div class="card-name">QR Code</div>
+                    </div>
+                    <div class="tool-card" onclick="switchTool('mockdata')">
+                        <div class="card-icon">&#9783;</div>
+                        <div class="card-name">Mock Data</div>
+                    </div>
+                    <div class="tool-card" onclick="switchTool('commit')">
+                        <div class="card-icon">&#10003;</div>
+                        <div class="card-name">Commit Msg</div>
+                    </div>
+                    <div class="tool-card" onclick="switchTool('ghactions')">
+                        <div class="card-icon">&#9881;</div>
+                        <div class="card-name">GH Actions</div>
+                    </div>
+                    <div class="tool-card" onclick="switchTool('ratelimit')">
+                        <div class="card-icon">&#9202;</div>
+                        <div class="card-name">Rate Limit</div>
+                    </div>
+                    <div class="tool-card" onclick="switchTool('dbschema')">
+                        <div class="card-icon">&#9707;</div>
+                        <div class="card-name">DB Schema</div>
+                    </div>
+                    <div class="tool-card" onclick="switchTool('apitiming')">
+                        <div class="card-icon">&#9636;</div>
+                        <div class="card-name">API Timing</div>
+                    </div>
+                    <div class="tool-card" onclick="switchTool('jsondiff')">
+                        <div class="card-icon">&#8800;</div>
+                        <div class="card-name">JSON Diff</div>
                     </div>
                 </div>
             </div>
@@ -381,6 +463,22 @@
             </div>
             <div class="strength-meter" id="pw-meter"><div class="fill" id="pw-meter-fill"></div></div>
             <div id="pw-strength-label" style="font-size:0.75rem;margin-top:0.3rem;color:var(--text-muted)"></div>
+            <div style="margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border)">
+                <h3 style="font-size:1.1rem;font-weight:600;margin-bottom:1rem;color:var(--text)">Password Strength Checker</h3>
+                <div class="input-group">
+                    <label>Enter a password to analyze</label>
+                    <input type="text" id="pw-check-input" placeholder="Type a password to analyze..." oninput="checkPasswordStrength()">
+                </div>
+                <div id="pw-check-result" style="display:none">
+                    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem">
+                        <div class="strength-meter" style="flex:1"><div class="fill" id="pw-check-fill"></div></div>
+                        <span id="pw-check-label" style="font-size:0.85rem;font-weight:600"></span>
+                    </div>
+                    <div class="color-values" id="pw-check-details"></div>
+                    <div id="pw-check-warnings" style="margin-top:0.75rem"></div>
+                    <div id="pw-check-suggestions" style="margin-top:0.5rem"></div>
+                </div>
+            </div>
         </div>
 
         <!-- Lorem Ipsum -->
@@ -717,6 +815,334 @@
                     <label>Preview</label>
                     <div class="output-area" id="md-output" style="min-height:300px;line-height:1.6"></div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Commit Message Generator -->
+        <div class="tool-panel" id="panel-commit">
+            <div class="tool-header">
+                <h2>Commit Message Generator</h2>
+                <p>Generate conventional commit messages with optional gitmoji</p>
+            </div>
+            <div class="tool-columns">
+                <div>
+                    <div class="input-group">
+                        <label>Type</label>
+                        <select id="commit-type" onchange="generateCommitMsg()">
+                            <option value="feat">feat - A new feature</option>
+                            <option value="fix">fix - A bug fix</option>
+                            <option value="docs">docs - Documentation</option>
+                            <option value="style">style - Formatting</option>
+                            <option value="refactor">refactor - Code restructuring</option>
+                            <option value="perf">perf - Performance</option>
+                            <option value="test">test - Tests</option>
+                            <option value="build">build - Build system</option>
+                            <option value="ci">ci - CI/CD</option>
+                            <option value="chore">chore - Maintenance</option>
+                            <option value="revert">revert - Revert</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Scope (optional)</label>
+                        <input type="text" id="commit-scope" placeholder="e.g. auth, api, ui" oninput="generateCommitMsg()">
+                    </div>
+                    <div class="input-group">
+                        <label>Description</label>
+                        <input type="text" id="commit-desc" placeholder="Short description of the change" oninput="generateCommitMsg()">
+                    </div>
+                    <div class="input-group">
+                        <label>Body (optional)</label>
+                        <textarea id="commit-body" rows="3" placeholder="Detailed explanation..." oninput="generateCommitMsg()"></textarea>
+                    </div>
+                    <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem">
+                        <label style="color:var(--text-secondary);font-size:0.8rem;display:flex;align-items:center;gap:0.3rem">
+                            <input type="checkbox" id="commit-breaking" onchange="generateCommitMsg()"> Breaking Change
+                        </label>
+                        <label style="color:var(--text-secondary);font-size:0.8rem;display:flex;align-items:center;gap:0.3rem">
+                            <input type="checkbox" id="commit-emoji" checked onchange="generateCommitMsg()"> Include Gitmoji
+                        </label>
+                    </div>
+                    <div class="input-group">
+                        <label>Issue / Ticket (optional)</label>
+                        <input type="text" id="commit-issue" placeholder="e.g. #123, JIRA-456" oninput="generateCommitMsg()">
+                    </div>
+                </div>
+                <div>
+                    <div class="input-group">
+                        <label>Generated Commit Message</label>
+                        <div class="output-area" id="commit-output" style="min-height:120px;white-space:pre-wrap;position:relative">
+                            <button class="copy-btn" onclick="copyOutput('commit-output')">Copy</button>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Git Command</label>
+                        <div class="output-area" id="commit-cmd" style="min-height:60px;white-space:pre-wrap;position:relative;font-family:var(--font-mono);font-size:0.85rem">
+                            <button class="copy-btn" onclick="copyOutput('commit-cmd')">Copy</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mock Data Generator -->
+        <div class="tool-panel" id="panel-mockdata">
+            <div class="tool-header">
+                <h2>Mock Data Generator</h2>
+                <p>Generate realistic fake data for testing and development</p>
+            </div>
+            <div class="tool-columns">
+                <div>
+                    <div style="display:flex;gap:1rem;margin-bottom:1rem;flex-wrap:wrap">
+                        <div class="input-group" style="flex:1;min-width:100px">
+                            <label>Count</label>
+                            <input type="number" id="mock-count" value="5" min="1" max="100">
+                        </div>
+                        <div class="input-group" style="flex:1;min-width:100px">
+                            <label>Format</label>
+                            <select id="mock-format">
+                                <option value="json">JSON</option>
+                                <option value="csv">CSV</option>
+                                <option value="sql">SQL INSERT</option>
+                                <option value="typescript">TypeScript</option>
+                            </select>
+                        </div>
+                        <div class="input-group" style="flex:1;min-width:100px">
+                            <label>Table Name</label>
+                            <input type="text" id="mock-table" value="users" placeholder="Table name">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Fields</label>
+                        <div id="mock-fields"></div>
+                        <button class="btn" onclick="addMockField()" style="margin-top:0.5rem">+ Add Field</button>
+                    </div>
+                    <div class="input-group">
+                        <label>Presets</label>
+                        <div class="btn-row">
+                            <button class="btn btn-active" onclick="loadMockPreset('user')">Users</button>
+                            <button class="btn" onclick="loadMockPreset('product')">Products</button>
+                            <button class="btn" onclick="loadMockPreset('order')">Orders</button>
+                            <button class="btn" onclick="loadMockPreset('post')">Blog Posts</button>
+                            <button class="btn" onclick="loadMockPreset('event')">Events</button>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="generateMockData()" style="margin-top:1rem">Generate Data</button>
+                </div>
+                <div>
+                    <div class="input-group">
+                        <label>Output</label>
+                        <textarea id="mock-output" readonly style="min-height:400px;font-family:var(--font-mono);font-size:0.85rem"></textarea>
+                        <button class="copy-btn" onclick="copyOutput('mock-output')" style="position:absolute;top:2rem;right:0.5rem">Copy</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- GitHub Actions Builder -->
+        <div class="tool-panel" id="panel-ghactions">
+            <div class="tool-header">
+                <h2>GitHub Actions Builder</h2>
+                <p>Build CI/CD workflow YAML files visually</p>
+            </div>
+            <div class="tool-columns">
+                <div>
+                    <div class="input-group">
+                        <label>Workflow Name</label>
+                        <input type="text" id="gha-name" value="CI" oninput="generateGHAction()">
+                    </div>
+                    <div class="input-group">
+                        <label>Trigger Events</label>
+                        <div style="display:flex;gap:1rem;flex-wrap:wrap">
+                            <label style="color:var(--text-secondary);font-size:0.8rem;display:flex;align-items:center;gap:0.3rem">
+                                <input type="checkbox" id="gha-push" checked onchange="generateGHAction()"> push
+                            </label>
+                            <label style="color:var(--text-secondary);font-size:0.8rem;display:flex;align-items:center;gap:0.3rem">
+                                <input type="checkbox" id="gha-pr" checked onchange="generateGHAction()"> pull_request
+                            </label>
+                            <label style="color:var(--text-secondary);font-size:0.8rem;display:flex;align-items:center;gap:0.3rem">
+                                <input type="checkbox" id="gha-schedule" onchange="generateGHAction()"> schedule
+                            </label>
+                            <label style="color:var(--text-secondary);font-size:0.8rem;display:flex;align-items:center;gap:0.3rem">
+                                <input type="checkbox" id="gha-dispatch" onchange="generateGHAction()"> workflow_dispatch
+                            </label>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Branches</label>
+                        <input type="text" id="gha-branches" value="main" placeholder="main, develop" oninput="generateGHAction()">
+                    </div>
+                    <div class="input-group">
+                        <label>Templates</label>
+                        <div class="btn-row" style="flex-wrap:wrap">
+                            <button class="btn" onclick="loadGHATemplate('node')">Node.js</button>
+                            <button class="btn" onclick="loadGHATemplate('python')">Python</button>
+                            <button class="btn" onclick="loadGHATemplate('docker')">Docker</button>
+                            <button class="btn" onclick="loadGHATemplate('rust')">Rust</button>
+                            <button class="btn" onclick="loadGHATemplate('go')">Go</button>
+                            <button class="btn" onclick="loadGHATemplate('dotnet')">.NET</button>
+                            <button class="btn" onclick="loadGHATemplate('java')">Java</button>
+                            <button class="btn" onclick="loadGHATemplate('pages')">Pages</button>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Jobs</label>
+                        <div id="gha-jobs"></div>
+                        <button class="btn" onclick="addGHAJob()" style="margin-top:0.5rem">+ Add Job</button>
+                    </div>
+                </div>
+                <div>
+                    <div class="input-group">
+                        <label>Generated Workflow YAML</label>
+                        <textarea id="gha-output" readonly style="min-height:400px;font-family:var(--font-mono);font-size:0.85rem"></textarea>
+                        <button class="copy-btn" onclick="copyOutput('gha-output')" style="position:absolute;top:2rem;right:0.5rem">Copy</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rate Limit Calculator -->
+        <div class="tool-panel" id="panel-ratelimit">
+            <div class="tool-header">
+                <h2>Rate Limit Calculator</h2>
+                <p>Calculate and visualize API rate limiting parameters</p>
+            </div>
+            <div class="tool-columns">
+                <div>
+                    <div style="display:flex;gap:1rem;flex-wrap:wrap">
+                        <div class="input-group" style="flex:1;min-width:120px">
+                            <label>Requests/second</label>
+                            <input type="number" id="rl-rps" value="100" min="1" oninput="calcRateLimit()">
+                        </div>
+                        <div class="input-group" style="flex:1;min-width:120px">
+                            <label>Burst size</label>
+                            <input type="number" id="rl-burst" value="50" min="1" oninput="calcRateLimit()">
+                        </div>
+                        <div class="input-group" style="flex:1;min-width:120px">
+                            <label>Concurrent clients</label>
+                            <input type="number" id="rl-clients" value="1000" min="1" oninput="calcRateLimit()">
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:1rem;flex-wrap:wrap">
+                        <div class="input-group" style="flex:1;min-width:120px">
+                            <label>Algorithm</label>
+                            <select id="rl-algo" onchange="calcRateLimit()">
+                                <option value="token-bucket">Token Bucket</option>
+                                <option value="fixed-window">Fixed Window</option>
+                                <option value="sliding-window">Sliding Window</option>
+                                <option value="leaky-bucket">Leaky Bucket</option>
+                            </select>
+                        </div>
+                        <div class="input-group" style="flex:1;min-width:120px">
+                            <label>Avg response time (ms)</label>
+                            <input type="number" id="rl-response" value="50" min="1" oninput="calcRateLimit()">
+                        </div>
+                        <div class="input-group" style="flex:1;min-width:120px">
+                            <label>Window (seconds)</label>
+                            <input type="number" id="rl-window" value="60" min="1" oninput="calcRateLimit()">
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="input-group">
+                        <label>Results</label>
+                        <div class="output-area" id="rl-output" style="min-height:300px;white-space:pre-wrap"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Database Schema Designer -->
+        <div class="tool-panel" id="panel-dbschema">
+            <div class="tool-header">
+                <h2>Database Schema Designer</h2>
+                <p>Design tables and columns visually, auto-generate CREATE TABLE SQL</p>
+            </div>
+            <div class="tool-columns">
+                <div>
+                    <div style="display:flex;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap">
+                        <button class="btn btn-primary" onclick="addDBTable()">+ Add Table</button>
+                        <button class="btn" onclick="loadDBPreset('blog')">Blog Preset</button>
+                        <button class="btn" onclick="loadDBPreset('ecommerce')">E-Commerce Preset</button>
+                        <button class="btn" onclick="loadDBPreset('saas')">SaaS Preset</button>
+                    </div>
+                    <div id="db-tables" style="max-height:500px;overflow-y:auto"></div>
+                </div>
+                <div>
+                    <div class="input-group">
+                        <label>Generated SQL</label>
+                        <textarea id="db-output" readonly style="min-height:300px;font-family:var(--font-mono);font-size:0.85rem"></textarea>
+                        <button class="copy-btn" onclick="copyOutput('db-output')" style="position:absolute;top:2rem;right:0.5rem">Copy</button>
+                    </div>
+                    <div class="input-group">
+                        <label>Entity Relationship Diagram</label>
+                        <div id="db-erd" class="output-area" style="min-height:200px;font-family:var(--font-mono);font-size:0.8rem;white-space:pre;overflow-x:auto"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Response Time Visualizer -->
+        <div class="tool-panel" id="panel-apitiming">
+            <div class="tool-header">
+                <h2>API Response Time Visualizer</h2>
+                <p>Input latency data for endpoints, visualize waterfall and percentile breakdown</p>
+            </div>
+            <div class="tool-columns">
+                <div>
+                    <div class="input-group">
+                        <label>Endpoints (one per line: <code style="font-size:0.75rem;color:var(--accent)">name latency1,latency2,...</code>)</label>
+                        <textarea id="api-timing-input" style="min-height:200px;font-family:var(--font-mono);font-size:0.85rem" placeholder="GET /api/users 45,52,48,120,55,49,51,200,47,53&#10;POST /api/orders 80,95,88,150,92,300,85,90,87,110&#10;GET /api/products 30,35,32,28,40,38,33,31,29,35&#10;GET /api/search 100,120,95,250,110,105,400,115,98,108" oninput="renderAPITiming()"></textarea>
+                    </div>
+                    <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+                        <button class="btn btn-primary" onclick="renderAPITiming()">Analyze</button>
+                        <button class="btn" onclick="loadAPITimingSample()">Load Sample Data</button>
+                    </div>
+                </div>
+                <div>
+                    <div class="input-group">
+                        <label>Waterfall Chart</label>
+                        <div id="api-waterfall" class="output-area" style="min-height:200px;padding:1rem"></div>
+                    </div>
+                    <div class="input-group">
+                        <label>Percentile Breakdown</label>
+                        <div id="api-percentiles" class="output-area" style="min-height:150px"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- JSON Diff Visualizer -->
+        <div class="tool-panel" id="panel-jsondiff">
+            <div class="tool-header">
+                <h2>JSON Diff Visualizer</h2>
+                <p>Compare two JSON objects side-by-side with highlighted differences</p>
+            </div>
+            <div class="tool-columns">
+                <div>
+                    <div class="input-group">
+                        <label>Original JSON</label>
+                        <textarea id="jdiff-left" style="min-height:250px;font-family:var(--font-mono);font-size:0.85rem" placeholder='{"name": "Alice", "age": 30, "city": "NYC"}'></textarea>
+                    </div>
+                </div>
+                <div>
+                    <div class="input-group">
+                        <label>Modified JSON</label>
+                        <textarea id="jdiff-right" style="min-height:250px;font-family:var(--font-mono);font-size:0.85rem" placeholder='{"name": "Alice", "age": 31, "country": "US"}'></textarea>
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex;gap:0.5rem;margin:1rem 0;flex-wrap:wrap">
+                <button class="btn btn-primary" onclick="computeJsonDiff()">Compare</button>
+                <button class="btn" onclick="loadJsonDiffSample()">Load Sample</button>
+                <button class="btn" onclick="swapJsonDiff()">Swap</button>
+            </div>
+            <div class="input-group">
+                <label>Diff Result</label>
+                <div id="jdiff-output" class="output-area" style="min-height:200px;font-family:var(--font-mono);font-size:0.85rem;white-space:pre-wrap"></div>
+            </div>
+            <div class="input-group">
+                <label>Summary</label>
+                <div id="jdiff-summary" class="output-area" style="min-height:60px"></div>
             </div>
         </div>
 
