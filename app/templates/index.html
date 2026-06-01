@@ -3,20 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DevForge - The Developer's Arsenal</title>
-    <meta name="description" content="DevForge - A collection of essential developer tools: JSON formatter, Base64, JWT decoder, regex tester, and more.">
+    <title>DevForge - Developer Tools</title>
+    <meta name="description" content="DevForge - A collection of essential developer tools: JSON formatter, HTML formatter, Base64, JWT decoder, regex tester, and more.">
     <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#9876;</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#9881;</text></svg>">
     <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js" defer></script>
 </head>
 <body>
 
 <div class="header">
-    <div class="header-crown">&#9876;</div>
-    <h1>DEVFORGE</h1>
-    <div class="subtitle">The Developer's Arsenal</div>
-    <div class="throne-wars-badge">Throne Wars Innovation</div>
+    <div class="header-left">
+        <div class="header-logo">DF</div>
+        <div>
+            <h1>Dev<span>Forge</span></h1>
+        </div>
+    </div>
+    <div class="header-right">
+        <div class="header-kbd" onclick="document.getElementById('shortcuts-modal').classList.add('open')">
+            <kbd>?</kbd> Shortcuts
+        </div>
+    </div>
 </div>
 
 <div class="app-container">
@@ -30,8 +37,8 @@
             <button class="tool-btn" data-tool="json" onclick="switchTool('json')">
                 <span class="tool-icon">{ }</span> JSON Formatter
             </button>
-            <button class="tool-btn" data-tool="html-entity" onclick="switchTool('html-entity')">
-                <span class="tool-icon">&lt;&gt;</span> HTML Entities
+            <button class="tool-btn" data-tool="html-format" onclick="switchTool('html-format')">
+                <span class="tool-icon">&lt;/&gt;</span> HTML Formatter
             </button>
             <button class="tool-btn" data-tool="sql" onclick="switchTool('sql')">
                 <span class="tool-icon">&#9638;</span> SQL Formatter
@@ -44,7 +51,7 @@
                 <span class="tool-icon">B64</span> Base64
             </button>
             <button class="tool-btn" data-tool="url" onclick="switchTool('url')">
-                <span class="tool-icon">%20</span> URL Encode
+                <span class="tool-icon">%</span> URL Encode
             </button>
             <button class="tool-btn" data-tool="jwt" onclick="switchTool('jwt')">
                 <span class="tool-icon">&#9919;</span> JWT Decoder
@@ -122,13 +129,17 @@
         <!-- Welcome Screen -->
         <div class="tool-panel active" id="panel-welcome">
             <div class="welcome">
-                <div class="forge-icon">&#9876;</div>
+                <div class="welcome-icon">&#9881;</div>
                 <h2>Welcome to DevForge</h2>
-                <p>Your medieval-forged toolkit for everyday development tasks. Pick a weapon from the arsenal to begin.</p>
+                <p>A fast, minimal toolkit for everyday development tasks. Pick a tool to get started.</p>
                 <div class="tools-grid">
                     <div class="tool-card" onclick="switchTool('json')">
                         <div class="card-icon">{ }</div>
                         <div class="card-name">JSON</div>
+                    </div>
+                    <div class="tool-card" onclick="switchTool('html-format')">
+                        <div class="card-icon">&lt;/&gt;</div>
+                        <div class="card-name">HTML</div>
                     </div>
                     <div class="tool-card" onclick="switchTool('base64')">
                         <div class="card-icon">B64</div>
@@ -170,6 +181,10 @@
                         <div class="card-icon">&#8621;</div>
                         <div class="card-name">YAML</div>
                     </div>
+                    <div class="tool-card" onclick="switchTool('sql')">
+                        <div class="card-icon">&#9638;</div>
+                        <div class="card-name">SQL</div>
+                    </div>
                     <div class="tool-card" onclick="switchTool('cron')">
                         <div class="card-icon">&#9201;</div>
                         <div class="card-name">Cron</div>
@@ -177,14 +192,6 @@
                     <div class="tool-card" onclick="switchTool('qr')">
                         <div class="card-icon">&#9641;</div>
                         <div class="card-name">QR Code</div>
-                    </div>
-                    <div class="tool-card" onclick="switchTool('case')">
-                        <div class="card-icon">Aa</div>
-                        <div class="card-name">Case</div>
-                    </div>
-                    <div class="tool-card" onclick="switchTool('markdown')">
-                        <div class="card-icon">M&#8595;</div>
-                        <div class="card-name">Markdown</div>
                     </div>
                 </div>
             </div>
@@ -198,7 +205,7 @@
             </div>
             <div class="input-group">
                 <label>Input JSON</label>
-                <textarea id="json-input" placeholder='{"name": "Throne Wars", "houses": ["Fire","Storm","Steel","Ice"]}'></textarea>
+                <textarea id="json-input" placeholder='{"name": "DevForge", "tools": ["json", "html", "base64"]}'></textarea>
             </div>
             <div class="btn-row">
                 <button class="btn btn-primary" onclick="jsonFormat()">Format</button>
@@ -215,6 +222,31 @@
             </div>
         </div>
 
+        <!-- HTML Formatter -->
+        <div class="tool-panel" id="panel-html-format">
+            <div class="tool-header">
+                <h2>HTML Formatter</h2>
+                <p>Beautify and minify HTML code with proper indentation</p>
+            </div>
+            <div class="input-group">
+                <label>Input HTML</label>
+                <textarea id="html-format-input" placeholder='<div class="container"><h1>Hello World</h1><p>This is a paragraph.</p><ul><li>Item 1</li><li>Item 2</li></ul></div>'></textarea>
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-primary" onclick="htmlBeautify()">Beautify</button>
+                <button class="btn" onclick="htmlMinify()">Minify</button>
+                <button class="btn" onclick="htmlPreview()">Preview</button>
+                <button class="btn btn-danger" onclick="clearFields('html-format-input','html-format-output');document.getElementById('html-preview-frame')&&document.getElementById('html-preview-frame').remove()">Clear</button>
+            </div>
+            <div class="input-group">
+                <label>Output</label>
+                <div class="output-area" id="html-format-output" style="position:relative">
+                    <button class="copy-btn" onclick="copyOutput('html-format-output')">Copy</button>
+                </div>
+            </div>
+            <div id="html-preview-container"></div>
+        </div>
+
         <!-- Base64 -->
         <div class="tool-panel" id="panel-base64">
             <div class="tool-header">
@@ -227,14 +259,14 @@
                         <label>Text</label>
                         <textarea id="b64-text" placeholder="Enter text to encode..."></textarea>
                     </div>
-                    <button class="btn btn-primary" onclick="b64Encode()">Encode &#8594;</button>
+                    <button class="btn btn-primary" onclick="b64Encode()">Encode &rarr;</button>
                 </div>
                 <div>
                     <div class="input-group">
                         <label>Base64</label>
                         <textarea id="b64-encoded" placeholder="Enter Base64 to decode..."></textarea>
                     </div>
-                    <button class="btn btn-primary" onclick="b64Decode()">&#8592; Decode</button>
+                    <button class="btn btn-primary" onclick="b64Decode()">&larr; Decode</button>
                 </div>
             </div>
         </div>
@@ -251,14 +283,14 @@
                         <label>Decoded Text</label>
                         <textarea id="url-decoded" placeholder="Hello World & more!"></textarea>
                     </div>
-                    <button class="btn btn-primary" onclick="urlEncode()">Encode &#8594;</button>
+                    <button class="btn btn-primary" onclick="urlEncode()">Encode &rarr;</button>
                 </div>
                 <div>
                     <div class="input-group">
                         <label>Encoded URL</label>
                         <textarea id="url-encoded" placeholder="Hello%20World%20%26%20more!"></textarea>
                     </div>
-                    <button class="btn btn-primary" onclick="urlDecode()">&#8592; Decode</button>
+                    <button class="btn btn-primary" onclick="urlDecode()">&larr; Decode</button>
                 </div>
             </div>
         </div>
@@ -271,7 +303,7 @@
             </div>
             <div class="input-group">
                 <label>JWT Token</label>
-                <textarea id="jwt-input" class="small" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IlRocm9uZSBXYXJzIn0..."></textarea>
+                <textarea id="jwt-input" class="small" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."></textarea>
             </div>
             <button class="btn btn-primary" onclick="jwtDecode()" style="margin-bottom:1rem">Decode</button>
             <div class="split-layout">
@@ -297,7 +329,7 @@
                 <p>Generate random v4 UUIDs</p>
             </div>
             <div class="btn-row" style="align-items:center">
-                <label style="margin:0;color:var(--text-dim);font-size:0.85rem">Count:</label>
+                <label style="margin:0;color:var(--text-muted);font-size:0.8rem">Count:</label>
                 <input type="number" id="uuid-count" value="5" min="1" max="50" style="width:80px">
                 <button class="btn btn-primary" onclick="generateUUIDs()">Generate</button>
                 <button class="btn" onclick="copyAllUUIDs()">Copy All</button>
@@ -327,28 +359,28 @@
             </div>
             <div class="btn-row" style="align-items:center;flex-wrap:wrap;gap:1rem">
                 <div>
-                    <label style="font-size:0.75rem;color:var(--text-dim)">Length</label>
+                    <label style="font-size:0.7rem;color:var(--text-muted)">Length</label>
                     <input type="number" id="pw-length" value="16" min="4" max="128" style="width:80px">
                 </div>
-                <label style="color:var(--text-dim);font-size:0.85rem;display:flex;align-items:center;gap:0.3rem">
+                <label style="color:var(--text-secondary);font-size:0.8rem;display:flex;align-items:center;gap:0.3rem">
                     <input type="checkbox" id="pw-upper" checked> Uppercase
                 </label>
-                <label style="color:var(--text-dim);font-size:0.85rem;display:flex;align-items:center;gap:0.3rem">
+                <label style="color:var(--text-secondary);font-size:0.8rem;display:flex;align-items:center;gap:0.3rem">
                     <input type="checkbox" id="pw-lower" checked> Lowercase
                 </label>
-                <label style="color:var(--text-dim);font-size:0.85rem;display:flex;align-items:center;gap:0.3rem">
+                <label style="color:var(--text-secondary);font-size:0.8rem;display:flex;align-items:center;gap:0.3rem">
                     <input type="checkbox" id="pw-digits" checked> Digits
                 </label>
-                <label style="color:var(--text-dim);font-size:0.85rem;display:flex;align-items:center;gap:0.3rem">
+                <label style="color:var(--text-secondary);font-size:0.8rem;display:flex;align-items:center;gap:0.3rem">
                     <input type="checkbox" id="pw-symbols" checked> Symbols
                 </label>
             </div>
             <button class="btn btn-primary" onclick="generatePassword()" style="margin:1rem 0">Generate</button>
-            <div class="output-area" id="pw-output" style="font-size:1.2rem;min-height:60px;display:flex;align-items:center;position:relative">
+            <div class="output-area" id="pw-output" style="font-size:1.1rem;min-height:60px;display:flex;align-items:center;position:relative">
                 <button class="copy-btn" onclick="copyOutput('pw-output')">Copy</button>
             </div>
             <div class="strength-meter" id="pw-meter"><div class="fill" id="pw-meter-fill"></div></div>
-            <div id="pw-strength-label" style="font-size:0.8rem;margin-top:0.3rem;color:var(--text-dim)"></div>
+            <div id="pw-strength-label" style="font-size:0.75rem;margin-top:0.3rem;color:var(--text-muted)"></div>
         </div>
 
         <!-- Lorem Ipsum -->
@@ -358,7 +390,7 @@
                 <p>Generate placeholder text</p>
             </div>
             <div class="btn-row" style="align-items:center">
-                <label style="margin:0;color:var(--text-dim);font-size:0.85rem">Paragraphs:</label>
+                <label style="margin:0;color:var(--text-muted);font-size:0.8rem">Paragraphs:</label>
                 <input type="number" id="lorem-count" value="3" min="1" max="20" style="width:80px">
                 <button class="btn btn-primary" onclick="generateLorem()">Generate</button>
                 <button class="btn" onclick="copyOutput('lorem-output')">Copy</button>
@@ -379,14 +411,14 @@
                 <textarea id="qr-input" class="small" placeholder="Enter text or URL..."></textarea>
             </div>
             <div class="btn-row" style="align-items:center">
-                <label style="margin:0;color:var(--text-dim);font-size:0.85rem">Size:</label>
+                <label style="margin:0;color:var(--text-muted);font-size:0.8rem">Size:</label>
                 <select id="qr-size" style="width:100px">
                     <option value="4">Small</option>
                     <option value="6" selected>Medium</option>
                     <option value="8">Large</option>
                     <option value="12">XL</option>
                 </select>
-                <label style="margin:0;color:var(--text-dim);font-size:0.85rem">Error Correction:</label>
+                <label style="margin:0;color:var(--text-muted);font-size:0.8rem">EC:</label>
                 <select id="qr-ec" style="width:80px">
                     <option value="L">Low</option>
                     <option value="M" selected>Medium</option>
@@ -472,7 +504,6 @@
                     <button class="btn" onclick="setCron('0 9 * * 1-5')">Weekdays 9am</button>
                     <button class="btn" onclick="setCron('0 0 * * 0')">Weekly Sunday</button>
                     <button class="btn" onclick="setCron('0 0 1 * *')">Monthly 1st</button>
-                    <button class="btn" onclick="setCron('0 0 1 1 *')">Yearly Jan 1</button>
                 </div>
             </div>
             <div class="input-group" style="margin-top:1rem">
@@ -510,14 +541,14 @@
                 <p>Pick colors and convert between formats</p>
             </div>
             <div style="display:flex;gap:1rem;align-items:start;margin-bottom:1rem">
-                <input type="color" id="color-picker" value="#d4a54a" onchange="colorFromPicker()" style="width:60px;height:60px;border:none;cursor:pointer;background:none">
+                <input type="color" id="color-picker" value="#6366f1" onchange="colorFromPicker()" style="width:56px;height:56px;border:none;cursor:pointer;background:none;border-radius:8px">
                 <div style="flex:1">
                     <div class="input-group" style="margin-bottom:0.5rem">
-                        <input type="text" id="color-hex-input" placeholder="#d4a54a" value="#d4a54a" oninput="colorFromHex()">
+                        <input type="text" id="color-hex-input" placeholder="#6366f1" value="#6366f1" oninput="colorFromHex()">
                     </div>
                 </div>
             </div>
-            <div class="color-preview" id="color-preview" style="background:#d4a54a"></div>
+            <div class="color-preview" id="color-preview" style="background:#6366f1"></div>
             <div class="color-values" id="color-values"></div>
         </div>
 
@@ -589,14 +620,14 @@
                         <label>YAML</label>
                         <textarea id="yaml-input" placeholder="name: DevForge&#10;version: 1.0&#10;features:&#10;  - json&#10;  - base64"></textarea>
                     </div>
-                    <button class="btn btn-primary" onclick="yamlToJson()">YAML &#8594; JSON</button>
+                    <button class="btn btn-primary" onclick="yamlToJson()">YAML &rarr; JSON</button>
                 </div>
                 <div>
                     <div class="input-group">
                         <label>JSON</label>
                         <textarea id="yaml-json-input" placeholder='{"name": "DevForge", "version": 1.0}'></textarea>
                     </div>
-                    <button class="btn btn-primary" onclick="jsonToYaml()">JSON &#8594; YAML</button>
+                    <button class="btn btn-primary" onclick="jsonToYaml()">JSON &rarr; YAML</button>
                 </div>
             </div>
         </div>
@@ -644,30 +675,6 @@
                 <div class="stat-item"><div class="stat-value" id="wc-sentences">0</div><div class="stat-label">Sentences</div></div>
                 <div class="stat-item"><div class="stat-value" id="wc-lines">0</div><div class="stat-label">Lines</div></div>
                 <div class="stat-item"><div class="stat-value" id="wc-paragraphs">0</div><div class="stat-label">Paragraphs</div></div>
-            </div>
-        </div>
-
-        <!-- HTML Entity -->
-        <div class="tool-panel" id="panel-html-entity">
-            <div class="tool-header">
-                <h2>HTML Entity Encoder / Decoder</h2>
-                <p>Convert special characters to HTML entities and back</p>
-            </div>
-            <div class="split-layout">
-                <div>
-                    <div class="input-group">
-                        <label>Text</label>
-                        <textarea id="html-text" placeholder='<div class="test">&amp;</div>'></textarea>
-                    </div>
-                    <button class="btn btn-primary" onclick="htmlEncode()">Encode &#8594;</button>
-                </div>
-                <div>
-                    <div class="input-group">
-                        <label>HTML Entities</label>
-                        <textarea id="html-encoded" placeholder="&amp;lt;div class=&amp;quot;test&amp;quot;&amp;gt;"></textarea>
-                    </div>
-                    <button class="btn btn-primary" onclick="htmlDecode()">&#8592; Decode</button>
-                </div>
             </div>
         </div>
 

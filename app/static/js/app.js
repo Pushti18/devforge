@@ -9,14 +9,12 @@ function switchTool(tool) {
     closeSidebar();
     if (tool === 'color') colorFromPicker();
 
-    // URL hash routing
     if (tool !== 'welcome') {
         history.replaceState(null, '', '#' + tool);
     } else {
         history.replaceState(null, '', location.pathname);
     }
 
-    // Persist last tool
     try { localStorage.setItem('devforge-last-tool', tool); } catch(e) {}
 }
 
@@ -170,6 +168,127 @@ function buildTreeHTML(value, path) {
     return html;
 }
 
+// ========== HTML Formatter ==========
+function htmlBeautify() {
+    const input = document.getElementById('html-format-input').value;
+    if (!input.trim()) { toast('Enter HTML to format'); return; }
+
+    const formatted = beautifyHTML(input);
+    document.getElementById('html-format-output').textContent = formatted;
+    document.getElementById('html-format-output').className = 'output-area success';
+}
+
+function htmlMinify() {
+    const input = document.getElementById('html-format-input').value;
+    if (!input.trim()) { toast('Enter HTML to minify'); return; }
+
+    const minified = input
+        .replace(/\n/g, '')
+        .replace(/\s{2,}/g, ' ')
+        .replace(/>\s+</g, '><')
+        .replace(/\s*\/>/g, '/>')
+        .trim();
+
+    document.getElementById('html-format-output').textContent = minified;
+    document.getElementById('html-format-output').className = 'output-area success';
+}
+
+function htmlPreview() {
+    const input = document.getElementById('html-format-input').value;
+    if (!input.trim()) { toast('Enter HTML to preview'); return; }
+
+    const container = document.getElementById('html-preview-container');
+    let frame = document.getElementById('html-preview-frame');
+    if (frame) frame.remove();
+
+    frame = document.createElement('iframe');
+    frame.id = 'html-preview-frame';
+    frame.style.cssText = 'width:100%;height:300px;border:1px solid var(--border);border-radius:10px;margin-top:1rem;background:white;';
+    frame.sandbox = 'allow-same-origin';
+    container.appendChild(frame);
+
+    const doc = frame.contentDocument || frame.contentWindow.document;
+    doc.open();
+    doc.write(input);
+    doc.close();
+}
+
+function beautifyHTML(html) {
+    const voidElements = new Set([
+        'area','base','br','col','embed','hr','img','input',
+        'link','meta','param','source','track','wbr'
+    ]);
+
+    let result = '';
+    let indent = 0;
+    const tab = '  ';
+
+    // Normalize whitespace
+    html = html.replace(/\s+/g, ' ').trim();
+
+    let i = 0;
+    while (i < html.length) {
+        if (html[i] === '<') {
+            // Find end of tag
+            const tagEnd = html.indexOf('>', i);
+            if (tagEnd === -1) break;
+
+            const tag = html.slice(i, tagEnd + 1);
+            const isClosing = tag[1] === '/';
+            const isSelfClosing = tag[tagEnd - i - 1] === '/';
+            const isDoctype = tag.startsWith('<!');
+            const isComment = tag.startsWith('<!--');
+
+            // Get tag name
+            let tagName = '';
+            if (!isComment && !isDoctype) {
+                const nameMatch = tag.match(/<\/?([a-zA-Z][a-zA-Z0-9-]*)/);
+                if (nameMatch) tagName = nameMatch[1].toLowerCase();
+            }
+
+            if (isComment) {
+                const commentEnd = html.indexOf('-->', i);
+                if (commentEnd !== -1) {
+                    const comment = html.slice(i, commentEnd + 3);
+                    result += tab.repeat(indent) + comment + '\n';
+                    i = commentEnd + 3;
+                } else {
+                    result += tab.repeat(indent) + html.slice(i) + '\n';
+                    break;
+                }
+            } else if (isClosing) {
+                indent = Math.max(0, indent - 1);
+                result += tab.repeat(indent) + tag + '\n';
+                i = tagEnd + 1;
+            } else if (isSelfClosing || voidElements.has(tagName) || isDoctype) {
+                result += tab.repeat(indent) + tag + '\n';
+                i = tagEnd + 1;
+            } else {
+                result += tab.repeat(indent) + tag + '\n';
+                indent++;
+                i = tagEnd + 1;
+            }
+        } else {
+            // Text content
+            const nextTag = html.indexOf('<', i);
+            let text;
+            if (nextTag === -1) {
+                text = html.slice(i);
+                i = html.length;
+            } else {
+                text = html.slice(i, nextTag);
+                i = nextTag;
+            }
+            text = text.trim();
+            if (text) {
+                result += tab.repeat(indent) + text + '\n';
+            }
+        }
+    }
+
+    return result.trimEnd();
+}
+
 // ========== Base64 ==========
 function b64Encode() {
     try {
@@ -221,13 +340,13 @@ function jwtDecode() {
     }
 }
 
-// ========== UUID (cryptographically secure) ==========
+// ========== UUID ==========
 function generateUUID() {
     if (crypto.randomUUID) return crypto.randomUUID();
     const bytes = new Uint8Array(16);
     crypto.getRandomValues(bytes);
-    bytes[6] = (bytes[6] & 0x0f) | 0x40; // version 4
-    bytes[8] = (bytes[8] & 0x3f) | 0x80; // variant 10
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
     const hex = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
     return hex.slice(0,8) + '-' + hex.slice(8,12) + '-' + hex.slice(12,16) + '-' + hex.slice(16,20) + '-' + hex.slice(20);
 }
@@ -270,7 +389,7 @@ async function generateHashes() {
     }
 }
 
-// ========== Password (rejection sampling for uniform distribution) ==========
+// ========== Password ==========
 function generatePassword() {
     const len = parseInt(document.getElementById('pw-length').value) || 16;
     let chars = '';
@@ -280,7 +399,6 @@ function generatePassword() {
     if (document.getElementById('pw-symbols').checked) chars += '!@#$%^&*()_+-=[]{}|;:,.<>?';
     if (!chars) { toast('Select at least one character type'); return; }
 
-    // Rejection sampling to avoid modulo bias
     const maxValid = Math.floor(256 / chars.length) * chars.length;
     let pw = '';
     while (pw.length < len) {
@@ -304,7 +422,7 @@ function generatePassword() {
     if (/[^A-Za-z0-9]/.test(pw)) strength++;
 
     const pct = Math.min(strength / 6 * 100, 100);
-    const colors = ['#d9534f','#d9534f','#e8a02e','#e8a02e','#5cb85c','#5cb85c','#2ecc71'];
+    const colors = ['#ef4444','#ef4444','#eab308','#eab308','#22c55e','#22c55e','#22c55e'];
     const labels = ['Very Weak','Weak','Fair','Fair','Strong','Very Strong','Very Strong'];
     document.getElementById('pw-meter-fill').style.width = pct + '%';
     document.getElementById('pw-meter-fill').style.backgroundColor = colors[strength];
@@ -353,7 +471,7 @@ function generateQR() {
     if (!text) { toast('Enter text or URL to generate QR code'); return; }
 
     if (typeof qrcode === 'undefined') {
-        container.innerHTML = '<span style="color:var(--text-dim)">QR library loading, please try again...</span>';
+        container.innerHTML = '<span style="color:var(--text-muted)">QR library loading, please try again...</span>';
         return;
     }
 
@@ -379,7 +497,7 @@ function generateQR() {
         svg += '</svg>';
         container.innerHTML = svg;
     } catch(e) {
-        container.innerHTML = '<span style="color:var(--error)">Error: ' + escapeHtml(e.message) + '</span>';
+        container.innerHTML = '<span style="color:var(--red)">Error: ' + escapeHtml(e.message) + '</span>';
     }
 }
 
@@ -391,7 +509,7 @@ function regexTest() {
     const output = document.getElementById('regex-output');
     const info = document.getElementById('regex-info');
 
-    if (!pattern) { output.innerHTML = '<span style="color:var(--text-dim)">Enter a pattern to begin...</span>'; info.textContent = ''; return; }
+    if (!pattern) { output.innerHTML = '<span style="color:var(--text-muted)">Enter a pattern to begin...</span>'; info.textContent = ''; return; }
 
     try {
         const regex = new RegExp(pattern, flags);
@@ -399,7 +517,7 @@ function regexTest() {
         info.textContent = `${matches.length} match${matches.length !== 1 ? 'es' : ''} found`;
 
         if (matches.length === 0) {
-            output.innerHTML = '<span style="color:var(--text-dim)">No matches</span>';
+            output.innerHTML = '<span style="color:var(--text-muted)">No matches</span>';
             return;
         }
 
@@ -423,7 +541,7 @@ function regexTest() {
             info.textContent += groupInfo;
         }
     } catch(e) {
-        output.innerHTML = `<span style="color:var(--error)">${escapeHtml(e.message)}</span>`;
+        output.innerHTML = `<span style="color:var(--red)">${escapeHtml(e.message)}</span>`;
         info.textContent = '';
     }
 }
@@ -451,7 +569,7 @@ function computeDiff() {
         }
     }
 
-    output.innerHTML = html || '<div class="diff-line" style="color:var(--text-dim);padding:1rem">No differences found</div>';
+    output.innerHTML = html || '<div class="diff-line" style="color:var(--text-muted);padding:1rem">No differences found</div>';
 }
 
 function lcsLines(a, b) {
@@ -485,17 +603,16 @@ function parseCron() {
     if (!input) { output.textContent = ''; runsContainer.innerHTML = ''; return; }
 
     const parts = input.split(/\s+/);
-    if (parts.length < 5 || parts.length > 5) {
-        output.innerHTML = '<span style="color:var(--error)">Expected 5 fields: minute hour day month weekday</span>';
+    if (parts.length !== 5) {
+        output.innerHTML = '<span style="color:var(--red)">Expected 5 fields: minute hour day month weekday</span>';
         runsContainer.innerHTML = '';
         return;
     }
 
     const [minute, hour, dom, month, dow] = parts;
     const desc = describeCron(minute, hour, dom, month, dow);
-    output.innerHTML = '<span style="color:var(--gold-light);font-size:1.1rem">' + escapeHtml(desc) + '</span>';
+    output.innerHTML = '<span style="color:var(--accent-light);font-size:1.05rem">' + escapeHtml(desc) + '</span>';
 
-    // Compute next 5 runs
     try {
         const runs = getNextCronRuns(parts, 5);
         runsContainer.innerHTML = runs.map((d, i) =>
@@ -511,23 +628,19 @@ function describeCron(min, hr, dom, mon, dow) {
 
     if (min === '*' && hr === '*' && dom === '*' && mon === '*' && dow === '*') return 'Every minute';
 
-    // Minute
     if (min === '*') pieces.push('every minute');
     else if (min.startsWith('*/')) pieces.push('every ' + min.slice(2) + ' minutes');
     else pieces.push('at minute ' + min);
 
-    // Hour
-    if (hr === '*') { /* already covered */ }
+    if (hr === '*') { /* covered */ }
     else if (hr.startsWith('*/')) pieces.push('every ' + hr.slice(2) + ' hours');
     else pieces.push('past hour ' + hr);
 
-    // Day of month
     if (dom !== '*') {
         if (dom.startsWith('*/')) pieces.push('every ' + dom.slice(2) + ' days');
         else pieces.push('on day ' + dom);
     }
 
-    // Month
     const monthNames = ['','January','February','March','April','May','June','July','August','September','October','November','December'];
     if (mon !== '*') {
         if (mon.startsWith('*/')) pieces.push('every ' + mon.slice(2) + ' months');
@@ -540,7 +653,6 @@ function describeCron(min, hr, dom, mon, dow) {
         }
     }
 
-    // Day of week
     const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
     if (dow !== '*') {
         const dayParts = dow.split(',').map(d => {
@@ -684,7 +796,6 @@ function updateColor(hex) {
         ['RGB', `rgb(${r}, ${g}, ${b})`],
         ['RGBA', `rgba(${r}, ${g}, ${b}, 1)`],
         ['HSL', `hsl(${Math.round(h*360)}, ${Math.round(s*100)}%, ${Math.round(l*100)}%)`],
-        ['CSS Filter', `brightness(0) saturate(100%)`],
     ];
 
     document.getElementById('color-values').innerHTML = values.map(([label, value]) =>
@@ -780,21 +891,6 @@ function wordCount() {
     document.getElementById('wc-paragraphs').textContent = text.trim() ? text.split(/\n\s*\n/).filter(p => p.trim()).length : 0;
 }
 
-// ========== HTML Entity (XSS-safe) ==========
-function htmlEncode() {
-    const text = document.getElementById('html-text').value;
-    const div = document.createElement('div');
-    div.appendChild(document.createTextNode(text));
-    document.getElementById('html-encoded').value = div.innerHTML;
-}
-
-function htmlDecode() {
-    const text = document.getElementById('html-encoded').value;
-    const parser = new DOMParser();
-    const doc = parser.parseFromString('<!doctype html><body>' + text, 'text/html');
-    document.getElementById('html-text').value = doc.body.textContent;
-}
-
 // ========== SQL Formatter ==========
 function sqlFormat() {
     const input = document.getElementById('sql-input').value;
@@ -835,22 +931,21 @@ function sqlUppercase() {
     document.getElementById('sql-output').textContent = sql;
 }
 
-// ========== Markdown Preview (XSS-safe) ==========
+// ========== Markdown Preview ==========
 function mdPreview() {
     const input = document.getElementById('md-input').value;
 
-    // Escape HTML first to prevent XSS, then apply markdown transformations
     let html = escapeHtml(input)
-        .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre style="background:var(--bg-card);padding:0.5rem;border-radius:4px;overflow-x:auto"><code>$2</code></pre>')
-        .replace(/`([^`]+)`/g, '<code style="background:var(--bg-card);padding:0.15rem 0.4rem;border-radius:3px;font-size:0.85em">$1</code>')
-        .replace(/^### (.+)$/gm, '<h3 style="color:var(--gold-light);font-family:Cinzel,serif;margin:0.5rem 0">$1</h3>')
-        .replace(/^## (.+)$/gm, '<h2 style="color:var(--gold-light);font-family:Cinzel,serif;margin:0.5rem 0">$1</h2>')
-        .replace(/^# (.+)$/gm, '<h1 style="color:var(--gold-light);font-family:Cinzel,serif;margin:0.5rem 0">$1</h1>')
+        .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre style="background:var(--bg-card);padding:0.5rem;border-radius:6px;overflow-x:auto"><code>$2</code></pre>')
+        .replace(/`([^`]+)`/g, '<code style="background:var(--bg-card);padding:0.15rem 0.4rem;border-radius:4px;font-size:0.85em">$1</code>')
+        .replace(/^### (.+)$/gm, '<h3 style="color:var(--text);margin:0.5rem 0;font-size:1.1rem">$1</h3>')
+        .replace(/^## (.+)$/gm, '<h2 style="color:var(--text);margin:0.5rem 0;font-size:1.3rem">$1</h2>')
+        .replace(/^# (.+)$/gm, '<h1 style="color:var(--text);margin:0.5rem 0;font-size:1.5rem">$1</h1>')
         .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
         .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
         .replace(/\*(.+?)\*/g, '<em>$1</em>')
         .replace(/~~(.+?)~~/g, '<del>$1</del>')
-        .replace(/^&gt; (.+)$/gm, '<blockquote style="border-left:3px solid var(--gold-dim);padding-left:0.75rem;color:var(--text-dim);margin:0.5rem 0">$1</blockquote>')
+        .replace(/^&gt; (.+)$/gm, '<blockquote style="border-left:3px solid var(--accent);padding-left:0.75rem;color:var(--text-secondary);margin:0.5rem 0">$1</blockquote>')
         .replace(/^[*-] (.+)$/gm, '<li>$1</li>')
         .replace(/^---$/gm, '<hr style="border:none;border-top:1px solid var(--border);margin:1rem 0">')
         .replace(/\n\n/g, '<br><br>')
@@ -867,7 +962,6 @@ function closeShortcutsModal(e) {
 }
 
 document.addEventListener('keydown', (e) => {
-    // Don't trigger shortcuts when typing in inputs
     const inInput = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName);
 
     if (e.key === 'Escape') {
@@ -894,7 +988,6 @@ document.addEventListener('keydown', (e) => {
                 e.preventDefault();
                 const searchInput = document.getElementById('sidebar-search-input');
                 searchInput.focus();
-                // On mobile, open sidebar first
                 document.getElementById('sidebar').classList.add('open');
                 document.getElementById('overlay').classList.add('open');
                 break;
@@ -916,7 +1009,6 @@ window.addEventListener('hashchange', loadFromHash);
 
 // ========== Init ==========
 document.addEventListener('DOMContentLoaded', () => {
-    // Try hash first, then localStorage, then welcome
     if (!loadFromHash()) {
         try {
             const last = localStorage.getItem('devforge-last-tool');
