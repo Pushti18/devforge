@@ -1,4 +1,4 @@
-# DevForge
+# BuildBox
 
 The Developer's Arsenal - A collection of essential developer tools.
 
@@ -37,7 +37,7 @@ The app will be available at `http://localhost:8000`.
 ## Project Structure
 
 ```
-devforge/
+buildbox/
 ├── app/
 │   ├── __init__.py
 │   ├── main.py

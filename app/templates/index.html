@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DevForge - Developer Tools</title>
-    <meta name="description" content="DevForge - A collection of essential developer tools: JSON formatter, HTML formatter, Base64, JWT decoder, regex tester, and more.">
+    <title>BuildBox - Developer Tools</title>
+    <meta name="description" content="BuildBox - A collection of essential developer tools: JSON formatter, HTML formatter, Base64, JWT decoder, regex tester, and more.">
     <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#9881;</text></svg>">
     <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js" defer></script>
@@ -33,15 +33,25 @@
         .percentile-card{background:var(--bg-input);border:1px solid var(--border);border-radius:8px;padding:.75rem}
         .percentile-card h4{font-size:.8rem;color:var(--text-muted);margin-bottom:.5rem}
         .percentile-val{font-size:1.5rem;font-weight:700}
+        .api-header-row{display:flex;gap:.4rem;align-items:center;margin-bottom:.4rem}
+        .api-header-row input{flex:1}
+        .api-res-tab{position:relative}
+        #api-history .history-item{padding:.4rem .6rem;border-radius:6px;cursor:pointer;display:flex;gap:.5rem;align-items:center;margin-bottom:.25rem;transition:background .15s}
+        #api-history .history-item:hover{background:var(--bg-input)}
+        .history-method{font-weight:700;font-size:.75rem;width:50px;flex-shrink:0}
+        .history-url{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-secondary)}
+        .history-status{font-size:.75rem;margin-left:auto;flex-shrink:0}
+        .api-loading{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite}
+        @keyframes spin{to{transform:rotate(360deg)}}
     </style>
 </head>
 <body>
 
 <div class="header">
     <div class="header-left">
-        <div class="header-logo">DF</div>
+        <div class="header-logo">BB</div>
         <div>
-            <h1>Dev<span>Forge</span></h1>
+            <h1>Build<span>Box</span></h1>
         </div>
     </div>
     <div class="header-right">
@@ -107,6 +117,9 @@
 
         <div class="sidebar-section">
             <div class="sidebar-section-title">Testers</div>
+            <button class="tool-btn" data-tool="apiclient" onclick="switchTool('apiclient')">
+                <span class="tool-icon">&#9889;</span> API Tester
+            </button>
             <button class="tool-btn" data-tool="regex" onclick="switchTool('regex')">
                 <span class="tool-icon">.*</span> Regex Tester
             </button>
@@ -184,7 +197,7 @@
         <div class="tool-panel active" id="panel-welcome">
             <div class="welcome">
                 <div class="welcome-icon">&#9881;</div>
-                <h2>Welcome to DevForge</h2>
+                <h2>Welcome to BuildBox</h2>
                 <p>A fast, minimal toolkit for everyday development tasks. Pick a tool to get started.</p>
                 <div class="tools-grid">
                     <div class="tool-card" onclick="switchTool('json')">
@@ -275,6 +288,10 @@
                         <div class="card-icon">&#8800;</div>
                         <div class="card-name">JSON Diff</div>
                     </div>
+                    <div class="tool-card" onclick="switchTool('apiclient')">
+                        <div class="card-icon">&#9889;</div>
+                        <div class="card-name">API Tester</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -287,7 +304,7 @@
             </div>
             <div class="input-group">
                 <label>Input JSON</label>
-                <textarea id="json-input" placeholder='{"name": "DevForge", "tools": ["json", "html", "base64"]}'></textarea>
+                <textarea id="json-input" placeholder='{"name": "BuildBox", "tools": ["json", "html", "base64"]}'></textarea>
             </div>
             <div class="btn-row">
                 <button class="btn btn-primary" onclick="jsonFormat()">Format</button>
@@ -716,14 +733,14 @@
                 <div>
                     <div class="input-group">
                         <label>YAML</label>
-                        <textarea id="yaml-input" placeholder="name: DevForge&#10;version: 1.0&#10;features:&#10;  - json&#10;  - base64"></textarea>
+                        <textarea id="yaml-input" placeholder="name: BuildBox&#10;version: 1.0&#10;features:&#10;  - json&#10;  - base64"></textarea>
                     </div>
                     <button class="btn btn-primary" onclick="yamlToJson()">YAML &rarr; JSON</button>
                 </div>
                 <div>
                     <div class="input-group">
                         <label>JSON</label>
-                        <textarea id="yaml-json-input" placeholder='{"name": "DevForge", "version": 1.0}'></textarea>
+                        <textarea id="yaml-json-input" placeholder='{"name": "BuildBox", "version": 1.0}'></textarea>
                     </div>
                     <button class="btn btn-primary" onclick="jsonToYaml()">JSON &rarr; YAML</button>
                 </div>
@@ -1143,6 +1160,85 @@
             <div class="input-group">
                 <label>Summary</label>
                 <div id="jdiff-summary" class="output-area" style="min-height:60px"></div>
+            </div>
+        </div>
+
+        <!-- API Tester -->
+        <div class="tool-panel" id="panel-apiclient">
+            <div class="tool-header">
+                <h2>API Tester</h2>
+                <p>Send HTTP requests and inspect responses — like a mini Postman</p>
+            </div>
+            <div style="display:flex;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap;align-items:flex-end">
+                <div class="input-group" style="width:120px;flex-shrink:0;margin:0">
+                    <label>Method</label>
+                    <select id="api-method">
+                        <option value="GET" selected>GET</option>
+                        <option value="POST">POST</option>
+                        <option value="PUT">PUT</option>
+                        <option value="PATCH">PATCH</option>
+                        <option value="DELETE">DELETE</option>
+                        <option value="HEAD">HEAD</option>
+                        <option value="OPTIONS">OPTIONS</option>
+                    </select>
+                </div>
+                <div class="input-group" style="flex:1;min-width:200px;margin:0">
+                    <label>URL</label>
+                    <input type="text" id="api-url" placeholder="https://api.example.com/endpoint">
+                </div>
+                <button class="btn btn-primary" onclick="sendAPIRequest()" id="api-send-btn" style="height:38px;margin:0">Send</button>
+            </div>
+            <div class="tool-columns">
+                <div>
+                    <div class="input-group">
+                        <label>Headers <button class="btn" onclick="addAPIHeader()" style="font-size:0.7rem;padding:0.15rem 0.5rem;margin-left:0.5rem">+ Add</button></label>
+                        <div id="api-headers">
+                            <div class="api-header-row" style="display:flex;gap:0.4rem;align-items:center;margin-bottom:0.4rem">
+                                <input type="text" placeholder="Key" value="Content-Type" style="flex:1">
+                                <input type="text" placeholder="Value" value="application/json" style="flex:1">
+                                <button class="btn" onclick="this.parentElement.remove()" style="padding:0.2rem 0.5rem">&times;</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Query Params <button class="btn" onclick="addAPIParam()" style="font-size:0.7rem;padding:0.15rem 0.5rem;margin-left:0.5rem">+ Add</button></label>
+                        <div id="api-params"></div>
+                    </div>
+                    <div class="input-group">
+                        <label>Body <span style="font-size:0.7rem;color:var(--text-muted)">(for POST/PUT/PATCH)</span></label>
+                        <textarea id="api-body" style="min-height:120px;font-family:var(--font-mono);font-size:0.85rem" placeholder='{"key": "value"}'></textarea>
+                    </div>
+                    <div class="input-group">
+                        <label>History</label>
+                        <div id="api-history" style="max-height:150px;overflow-y:auto;font-size:0.8rem"></div>
+                    </div>
+                </div>
+                <div>
+                    <div id="api-response-bar" style="display:none;margin-bottom:1rem">
+                        <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center;font-size:0.85rem">
+                            <span id="api-res-status" style="font-weight:700;padding:0.25rem 0.75rem;border-radius:6px"></span>
+                            <span id="api-res-time" style="color:var(--text-muted)"></span>
+                            <span id="api-res-size" style="color:var(--text-muted)"></span>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <div class="btn-row" style="margin-bottom:0.5rem">
+                            <button class="btn btn-active" onclick="showAPITab('body')">Body</button>
+                            <button class="btn" onclick="showAPITab('headers')">Headers</button>
+                            <button class="btn" onclick="showAPITab('raw')">Raw</button>
+                        </div>
+                        <div id="api-res-body" class="api-res-tab">
+                            <textarea id="api-res-body-text" readonly style="min-height:350px;font-family:var(--font-mono);font-size:0.85rem" placeholder="Response will appear here..."></textarea>
+                            <button class="copy-btn" onclick="copyOutput('api-res-body-text')" style="position:absolute;top:0.5rem;right:0.5rem">Copy</button>
+                        </div>
+                        <div id="api-res-headers" class="api-res-tab" style="display:none">
+                            <div class="output-area" id="api-res-headers-text" style="min-height:350px;font-family:var(--font-mono);font-size:0.85rem;white-space:pre-wrap"></div>
+                        </div>
+                        <div id="api-res-raw" class="api-res-tab" style="display:none">
+                            <textarea id="api-res-raw-text" readonly style="min-height:350px;font-family:var(--font-mono);font-size:0.85rem"></textarea>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 

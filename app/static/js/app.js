@@ -15,7 +15,7 @@ function switchTool(tool) {
         history.replaceState(null, '', location.pathname);
     }
 
-    try { localStorage.setItem('devforge-last-tool', tool); } catch(e) {}
+    try { localStorage.setItem('buildbox-last-tool', tool); } catch(e) {}
 }
 
 function toggleSidebar() {
@@ -2537,7 +2537,7 @@ sql: (lang) => {
 
 // ===== YAML =====
 yaml: (lang) => {
-    const yamlText = document.getElementById('yaml-input').value || 'name: DevForge\nversion: 1.0';
+    const yamlText = document.getElementById('yaml-input').value || 'name: BuildBox\nversion: 1.0';
     const e = esc(yamlText);
     return {
         python: `import yaml\nimport json\n\nyaml_str = """${yamlText.replace(/"/g,'\\"')}"""\n\n# YAML to dict\ndata = yaml.safe_load(yaml_str)\nprint(data)\n\n# YAML to JSON\nprint(json.dumps(data, indent=2))\n\n# Dict to YAML\nprint(yaml.dump(data, default_flow_style=False))`,
@@ -3392,7 +3392,7 @@ function renderAPITiming() {
 // ========== JSON Diff Visualizer ==========
 function loadJsonDiffSample() {
     document.getElementById('jdiff-left').value = JSON.stringify({
-        name: "DevForge",
+        name: "BuildBox",
         version: "1.0.0",
         description: "Developer tools",
         author: "Alice",
@@ -3401,7 +3401,7 @@ function loadJsonDiffSample() {
         license: "MIT"
     }, null, 2);
     document.getElementById('jdiff-right').value = JSON.stringify({
-        name: "DevForge",
+        name: "BuildBox",
         version: "2.0.0",
         description: "Developer tools suite",
         maintainer: "Bob",
@@ -3499,6 +3499,176 @@ function computeJsonDiff() {
         `</div>`;
 }
 
+// ========== API Tester ==========
+function addAPIHeader(key = '', value = '') {
+    const container = document.getElementById('api-headers');
+    const row = document.createElement('div');
+    row.className = 'api-header-row';
+    row.style.cssText = 'display:flex;gap:0.4rem;align-items:center;margin-bottom:0.4rem';
+    row.innerHTML = `<input type="text" placeholder="Key" value="${key}" style="flex:1"><input type="text" placeholder="Value" value="${value}" style="flex:1"><button class="btn" onclick="this.parentElement.remove()" style="padding:0.2rem 0.5rem">&times;</button>`;
+    container.appendChild(row);
+}
+
+function addAPIParam(key = '', value = '') {
+    const container = document.getElementById('api-params');
+    const row = document.createElement('div');
+    row.className = 'api-header-row';
+    row.style.cssText = 'display:flex;gap:0.4rem;align-items:center;margin-bottom:0.4rem';
+    row.innerHTML = `<input type="text" placeholder="Key" value="${key}" style="flex:1"><input type="text" placeholder="Value" value="${value}" style="flex:1"><button class="btn" onclick="this.parentElement.remove()" style="padding:0.2rem 0.5rem">&times;</button>`;
+    container.appendChild(row);
+}
+
+function showAPITab(tab) {
+    document.querySelectorAll('.api-res-tab').forEach(el => el.style.display = 'none');
+    document.getElementById('api-res-' + tab).style.display = 'block';
+    const btns = document.querySelector('#panel-apiclient .btn-row');
+    if (btns) btns.querySelectorAll('.btn').forEach(b => {
+        b.classList.toggle('btn-active', b.textContent.toLowerCase() === tab || (tab === 'body' && b.textContent === 'Body'));
+    });
+}
+
+const apiHistory = [];
+
+async function sendAPIRequest() {
+    const method = document.getElementById('api-method').value;
+    let url = document.getElementById('api-url').value.trim();
+    if (!url) { alert('Please enter a URL'); return; }
+
+    // Build query params
+    const paramRows = document.querySelectorAll('#api-params .api-header-row');
+    const params = new URLSearchParams();
+    paramRows.forEach(row => {
+        const inputs = row.querySelectorAll('input');
+        const k = inputs[0].value.trim();
+        const v = inputs[1].value.trim();
+        if (k) params.append(k, v);
+    });
+    const paramStr = params.toString();
+    if (paramStr) url += (url.includes('?') ? '&' : '?') + paramStr;
+
+    // Build headers
+    const headerRows = document.querySelectorAll('#api-headers .api-header-row');
+    const headers = {};
+    headerRows.forEach(row => {
+        const inputs = row.querySelectorAll('input');
+        const k = inputs[0].value.trim();
+        const v = inputs[1].value.trim();
+        if (k) headers[k] = v;
+    });
+
+    const body = document.getElementById('api-body').value.trim() || null;
+
+    // UI: show loading
+    const sendBtn = document.getElementById('api-send-btn');
+    const origText = sendBtn.textContent;
+    sendBtn.innerHTML = '<span class="api-loading"></span>';
+    sendBtn.disabled = true;
+
+    const bar = document.getElementById('api-response-bar');
+    bar.style.display = 'none';
+
+    try {
+        const startTime = performance.now();
+        const res = await fetch('/api/proxy', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url, method, headers, body })
+        });
+        const clientTime = performance.now() - startTime;
+        const data = await res.json();
+
+        if (data.error) {
+            document.getElementById('api-res-body-text').value = 'Error: ' + data.error;
+            document.getElementById('api-res-headers-text').textContent = '';
+            document.getElementById('api-res-raw-text').value = JSON.stringify(data, null, 2);
+            bar.style.display = 'block';
+            const statusEl = document.getElementById('api-res-status');
+            statusEl.textContent = res.status + ' Error';
+            statusEl.style.background = 'rgba(239,68,68,0.15)';
+            statusEl.style.color = '#ef4444';
+            document.getElementById('api-res-time').textContent = Math.round(clientTime) + 'ms';
+            document.getElementById('api-res-size').textContent = '';
+            addToAPIHistory(method, url, res.status);
+            return;
+        }
+
+        // Status bar
+        bar.style.display = 'block';
+        const statusEl = document.getElementById('api-res-status');
+        statusEl.textContent = data.status + ' ' + (data.status_text || '');
+        if (data.status >= 200 && data.status < 300) {
+            statusEl.style.background = 'rgba(34,197,94,0.15)'; statusEl.style.color = '#22c55e';
+        } else if (data.status >= 400) {
+            statusEl.style.background = 'rgba(239,68,68,0.15)'; statusEl.style.color = '#ef4444';
+        } else {
+            statusEl.style.background = 'rgba(234,179,8,0.15)'; statusEl.style.color = '#eab308';
+        }
+        document.getElementById('api-res-time').textContent = data.time_ms + 'ms (server) / ' + Math.round(clientTime) + 'ms (total)';
+
+        const sizeKB = (data.size_bytes / 1024).toFixed(1);
+        document.getElementById('api-res-size').textContent = data.size_bytes > 1024 ? sizeKB + ' KB' : data.size_bytes + ' B';
+
+        // Body tab
+        let bodyText;
+        if (typeof data.body === 'object') {
+            bodyText = JSON.stringify(data.body, null, 2);
+        } else {
+            bodyText = data.body;
+            try { bodyText = JSON.stringify(JSON.parse(data.body), null, 2); } catch(e) {}
+        }
+        document.getElementById('api-res-body-text').value = bodyText;
+
+        // Headers tab
+        let headersText = '';
+        if (data.headers) {
+            Object.entries(data.headers).forEach(([k, v]) => {
+                headersText += k + ': ' + v + '\n';
+            });
+        }
+        document.getElementById('api-res-headers-text').textContent = headersText;
+
+        // Raw tab
+        document.getElementById('api-res-raw-text').value = JSON.stringify(data, null, 2);
+
+        showAPITab('body');
+        addToAPIHistory(method, url, data.status);
+
+    } catch (e) {
+        document.getElementById('api-res-body-text').value = 'Network Error: ' + e.message;
+        bar.style.display = 'block';
+        const statusEl = document.getElementById('api-res-status');
+        statusEl.textContent = 'Error';
+        statusEl.style.background = 'rgba(239,68,68,0.15)';
+        statusEl.style.color = '#ef4444';
+        addToAPIHistory(method, url, 0);
+    } finally {
+        sendBtn.textContent = origText;
+        sendBtn.disabled = false;
+    }
+}
+
+function addToAPIHistory(method, url, status) {
+    apiHistory.unshift({ method, url, status, time: new Date() });
+    if (apiHistory.length > 20) apiHistory.pop();
+    renderAPIHistory();
+}
+
+function renderAPIHistory() {
+    const container = document.getElementById('api-history');
+    container.innerHTML = apiHistory.map((h, i) => {
+        const methodColor = { GET: '#22c55e', POST: '#6366f1', PUT: '#f97316', PATCH: '#eab308', DELETE: '#ef4444' }[h.method] || 'var(--text)';
+        const statusColor = h.status >= 200 && h.status < 300 ? '#22c55e' : h.status >= 400 ? '#ef4444' : '#eab308';
+        return `<div class="history-item" onclick="loadAPIHistoryItem(${i})"><span class="history-method" style="color:${methodColor}">${h.method}</span><span class="history-url">${h.url}</span><span class="history-status" style="color:${statusColor}">${h.status || 'ERR'}</span></div>`;
+    }).join('');
+}
+
+function loadAPIHistoryItem(idx) {
+    const item = apiHistory[idx];
+    if (!item) return;
+    document.getElementById('api-method').value = item.method;
+    document.getElementById('api-url').value = item.url;
+}
+
 // ========== Hash Routing ==========
 function loadFromHash() {
     const hash = location.hash.slice(1);
@@ -3517,7 +3687,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!loadFromHash()) {
         try {
-            const last = localStorage.getItem('devforge-last-tool');
+            const last = localStorage.getItem('buildbox-last-tool');
             if (last && document.getElementById('panel-' + last)) {
                 switchTool(last);
             }
